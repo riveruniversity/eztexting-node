@@ -50,6 +50,7 @@ var Messages = /** @class */ (function () {
                 _this.multi.close();
             }
         };
+        EZService.initDotenv();
         this.login = EZService.checkLoginInfo();
         this.format = format;
         this.multi = new node_libcurl_1.Multi();

@@ -16,7 +16,7 @@ export function getTimestamp (stringTime: string | undefined) {
 }
 
 export function checkLoginInfo() {
-	dotenv.config();
+	
 	if (!process.env.USR || !process.env.PWD)
 		throw new Error("Missing parameter: 'Username' or 'Password'! Please add environment variables.");
 
@@ -25,5 +25,10 @@ export function checkLoginInfo() {
 
 
 export function getCertificate() {
-    return certificate
+    if(process.env.CRT_PATH) return process.env.CRT_PATH
+    else return certificate
+}
+
+export function initDotenv () {
+    dotenv.config();
 }

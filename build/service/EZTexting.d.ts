@@ -4,3 +4,4 @@ export declare function checkLoginInfo(): {
     Password: string;
 };
 export declare function getCertificate(): string;
+export declare function initDotenv(): void;
