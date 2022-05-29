@@ -1,12 +1,14 @@
 # eztexting-node
-Send single, bulk and bulk individual SMS and MMS node-libcurl using the EZTexting REST API.
+📨 Send single, bulk and bulk individual SMS and MMS [node-libcurl](https://www.npmjs.com/package/node-libcurl) using the EZTexting REST API.
 
-Requests are being send async via the libcurl Multi and Easy handler. 
+🔀 Requests are being send async via the libcurl Multi and Easy handler. 
 
 🚧 Messages are being sent but request responses are currently only logged in the console. I'm working on adding a callback parameter.
 
 
-# Send one message to a single phone number
+
+## Send one message to a single phone number
+---
 
 ```javascript
 import { Messages } from 'eztexting-node'
@@ -20,8 +22,8 @@ new Messages(format).sendMessage(singleMessage, 'callback')
 ```
 
 
-# Send the same message to multiple phone numbers
-
+## Send the same message to multiple phone numbers
+---
 ```javascript
 import { Messages } from 'eztexting-node'
 import { Message, ResponseFormat } from 'eztexting-node'
@@ -34,8 +36,8 @@ new Messages(format).sendMessage(bulkMessages, 'callback')
 ```
 
 
-# Send individual messages to specific phone numbers
-
+## Send individual messages to specific phone numbers
+---
 ```javascript
 import { Messages } from 'eztexting-node'
 import { Message, ResponseFormat } from 'eztexting-node'
