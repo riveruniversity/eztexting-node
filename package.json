@@ -1,0 +1,46 @@
+{
+  "name": "eztexting-node",
+  "version": "0.1.3",
+  "description": "Send async single, bulk and bulk individual SMS and MMS node-libcurl using the EZTexting REST API.",
+  "main": "./lib/index.js",
+  "scripts": {
+    "start": "nodemon src/index.ts",
+    "test": "nodemon src/test/test.ts",
+    "test-messages": "nodemon src/test/test.messages.ts",
+    "build": "tsc --project tsconfig.json"
+  },
+  "keywords": [
+    "node",
+    "eztext",
+    "eztexting",
+    "sms",
+    "mms",
+    "bulk-texting",
+    "text",
+    "messages"
+  ],
+  "author": "River University",
+  "license": "MIT",
+  "homepage": "https://github.com/riveruniversity/eztexting-node#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/riveruniversity/eztexting-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/riveruniversity/eztexting-node/issues"
+  },
+  "bin": {
+    "eztexting-node": "./lib/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "node-libcurl": "^2.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.35",
+    "eslint": "^8.16.0",
+    "nodemon": "^2.0.16",
+    "ts-node": "^10.8.0",
+    "typescript": "^4.6.4"
+  }
+}
