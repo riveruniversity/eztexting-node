@@ -8,7 +8,6 @@
 
 
 ## Send one message to a single phone number
----
 
 ```javascript
 import { Messages } from 'eztexting-node'
@@ -23,7 +22,7 @@ new Messages(format).sendMessage(singleMessage, 'callback')
 
 
 ## Send the same message to multiple phone numbers
----
+
 ```javascript
 import { Messages } from 'eztexting-node'
 import { Message, ResponseFormat } from 'eztexting-node'
@@ -37,7 +36,7 @@ new Messages(format).sendMessage(bulkMessages, 'callback')
 
 
 ## Send individual messages to specific phone numbers
----
+
 ```javascript
 import { Messages } from 'eztexting-node'
 import { Message, ResponseFormat } from 'eztexting-node'
