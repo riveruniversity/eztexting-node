@@ -1,5 +1,5 @@
 import path from 'path';
 
-const rootPath =  process.cwd()
+//const rootPath =  process.cwd()
 
-export const certificate = path.join(__dirname, 'cacert.pem');
+export const certificate = process.env.CRT_PATH ? process.env.CRT_PATH : path.join(__dirname, 'cacert.pem');
