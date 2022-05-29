@@ -5,7 +5,16 @@
 
 🚧 Messages are being sent but request responses are currently only logged in the console. I'm working on adding a callback parameter.
 
+## Install Dev Dependencies
+### TypeScript
 
+`npm i @types/node eslint ts-node typescript --save-dev`
+
+### Nodemon (optional)
+I personally like to code with [nodemon](https://www.npmjs.com/package/nodemon)
+> nodemon is a tool that helps develop Node.js based applications by automatically restarting the node application when file changes in the directory are detected.
+
+Install: `npm i nodemon --save-dev`
 
 ## Send one message to a single phone number
 
