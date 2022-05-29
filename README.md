@@ -5,6 +5,18 @@
 
 🚧 Messages are being sent but request responses are currently only logged in the console. I'm working on adding a callback parameter.
 
+## Environment Dependencies
+Create a `.env` file in your root folder and add 2 variables `USR` and `PWD`:
+
+```
+USR=eztexting_user
+PWD=eztexting_pa$$word
+```
+
+> [Dotenv](https://www.dotenv.org/)	: The worldwide standard for securing environment variables
+
+
+
 ## Install Dev Dependencies
 ### TypeScript
 
