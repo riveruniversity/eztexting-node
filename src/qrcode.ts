@@ -3,5 +3,5 @@ import { Messages, QRCodeGenerator } from '.'
 
 const qr = new QRCodeGenerator('png')
 
-qr.style("testing it")
-//qr.generate()
+qr.generate("testing it")
+qr.save(__dirname)

@@ -3,8 +3,8 @@ import { defaultStyle } from "../conf/qrcode";
 
 import { OutputFormat } from '../types/QRCode'
 
-const QRCodeStyling  = require("qr-code-styling-node/lib/qr-code-styling.common.js");
-const canvas = require("canvas");
+const { QRCodeStyling }  = require("qr-code-styling-node/lib/qr-code-styling.common.js");
+const nodeCanvas = require("canvas");
 const { JSDOM } = require("jsdom");
 const fs = require("fs");
 const path = require('path')
@@ -20,7 +20,7 @@ export class QRCodeGenerator {
     }
 
 
-	async style (codeData: string, style = defaultStyle) {
+	generate (codeData: string, style: any = defaultStyle) {
 
 		if (this.format != 'png') { // 'png' 'jpeg' 'webp' 'svg'
 
@@ -32,24 +32,17 @@ export class QRCodeGenerator {
 
 		// For canvas type
 		const qrCodeImage = new QRCodeStyling({
-			canvas, // this is required
+			nodeCanvas, // this is required
 			...style,
 		})
 
-        qrCodeImage.getRawData(this.format)
-
-        //console.log(this.buffer.toString('base64'))
-
-        console.log('done')
-
-		//const filename = path.resolve('./public/qr') + '/' + codeData + "." + this.format;
-        //fs.writeFileSync(filename, this.buffer, {flag: 'w+'});
-
+        this.buffer = qrCodeImage.getRawData(this.format)
+		return this.buffer
 		//const base64 = buffer.toString('base64')
-		//const src = `data:image/${this.format};base64,${base64}`
-
-
 	}
 
-    generate ( ) {}
+    save(filePath: string = __dirname, fileName: string = new Date().getTime().toString()) {
+		const file = path.resolve(`${filePath}/qrcodes/${fileName}`) + `${this.format}`
+		fs.writeFileSync(file, this.buffer, {flag: 'w+'});
+	}
 }
