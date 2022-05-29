@@ -37,6 +37,8 @@ export class Messages implements CurlConf {
 
 
 	sendMessage (messages: Message[] , callback: any) {
+
+		console.log("🚀 sendMessage");
 		
 		this.messages = messages
 		
@@ -97,7 +99,7 @@ export class Messages implements CurlConf {
 		handle.close();
 	
 		if (++this.finished === this.messages.length) {
-			console.log("Finished all requests!");
+			console.log("🚁 finished all requests!");
 			// remember to close the multi instance too, when you are done with it.
 			this.multi.close();
 		}

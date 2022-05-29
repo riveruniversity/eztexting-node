@@ -1,45 +1,59 @@
 # eztexting-node
-Send async single, bulk and bulk individual SMS and MMS node-libcurl using the EZTexting REST API.
+Send single, bulk and bulk individual SMS and MMS node-libcurl using the EZTexting REST API.
+
+Requests are being send async via the libcurl Multi and Easy handler. 
+
+🚧 Messages are being sent but request responses are currently only logged in the console. I'm working on adding a callback parameter.
 
 
-# Send a single message
+# Send one message to a single phone number
 
 ```javascript
-import { EZTexting } from "../index";
-import { MessageFormat } from '../types/message'
+import { Messages } from 'eztexting-node'
+import { Message, ResponseFormat } from 'eztexting-node'
 
+const singleMessage: Message[] = [
+	{PhoneNumbers: '2057404127', Message: 'Single message', StampToSend: '2022-06-10 16:15'}
+]
 
-// Send single message
-
+new Messages(format).sendMessage(singleMessage, 'callback')
 ```
 
 
-# Send bulk messages
-
-🚧 🚧 🚧 
-I'm working on it. Throws an Error('Handle already running!')
-
-
+# Send the same message to multiple phone numbers
 
 ```javascript
-import { EZTexting } from "../index";
-import { MessageFormat } from '../types/message'
+import { Messages } from 'eztexting-node'
+import { Message, ResponseFormat } from 'eztexting-node'
+
+const bulkMessages: Message[] = [
+	{PhoneNumbers: ['2057404127', '205-740-4177'], Subject: "1", Message: "Bulk message"}
+];
+
+new Messages(format).sendMessage(bulkMessages, 'callback')
+```
 
 
-// Send bulk messages
-const optionBulk: MessageFormat = { 
-    format: "json"
-};
+# Send individual messages to specific phone numbers
 
-const messages = [
-    {'PhoneNumbers' : '8134507575', 'subject' : '1', 'Message': JSON.stringify(new Date)},
-    {'PhoneNumbers' : '8134507575', 'subject' : '2', 'Message': JSON.stringify(new Date)},
-    {'PhoneNumbers' : '8134507575', 'subject' : '3', 'Message': JSON.stringify(new Date)},
-    {'PhoneNumbers' : '8134507575', 'subject' : '4', 'Message': JSON.stringify(new Date)},
-    {'PhoneNumbers' : '8134507575', 'subject' : '5', 'Message': JSON.stringify(new Date)}
-]
+```javascript
+import { Messages } from 'eztexting-node'
+import { Message, ResponseFormat } from 'eztexting-node'
 
-const ez = new EZTexting().sendBulkMessage(optionBulk, messages, 'callback');
+const individualMessages: Message[] = [
+	{PhoneNumbers: "2057404127", Subject: "1",Message: "Individual message 1"},
+	{PhoneNumbers: "205-740-4177", Subject: "2",Message: "Individual message 2"},
+	{PhoneNumbers: "(205) 740-4181", Subject: "3",Message: "Individual message 3"}
+];
+
+new Messages(format).sendMessage(individualMessages, 'callback')
+```
+
+
+# Send a generated QR Code as picture to specific phone numbers
+
+```javascript
+🚧 Working on it...
 ```
 
 
