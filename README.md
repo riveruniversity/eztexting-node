@@ -13,6 +13,8 @@
 import { Messages } from 'eztexting-node'
 import { Message, ResponseFormat } from 'eztexting-node'
 
+const format: ResponseFormat = 'json';
+
 const singleMessage: Message[] = [
 	{PhoneNumbers: '2057404127', Message: 'Single message', StampToSend: '2022-06-10 16:15'}
 ]
@@ -27,6 +29,8 @@ new Messages(format).sendMessage(singleMessage, 'callback')
 import { Messages } from 'eztexting-node'
 import { Message, ResponseFormat } from 'eztexting-node'
 
+const format: ResponseFormat = 'json';
+
 const bulkMessages: Message[] = [
 	{PhoneNumbers: ['2057404127', '205-740-4177'], Subject: "1", Message: "Bulk message"}
 ];
@@ -40,6 +44,8 @@ new Messages(format).sendMessage(bulkMessages, 'callback')
 ```javascript
 import { Messages } from 'eztexting-node'
 import { Message, ResponseFormat } from 'eztexting-node'
+
+const format: ResponseFormat = 'json';
 
 const individualMessages: Message[] = [
 	{PhoneNumbers: "2057404127", Subject: "1",Message: "Individual message 1"},
