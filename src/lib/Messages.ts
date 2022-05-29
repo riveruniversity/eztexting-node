@@ -28,8 +28,10 @@ export class Messages implements CurlConf {
 	finished: number = 0;
 
 	constructor(format: ResponseFormat) {
-		this.login = EZService.checkLoginInfo();
+		EZService.initDotenv();
 
+		this.login = EZService.checkLoginInfo();
+		
 		this.format = format
 		this.multi = new Multi();
 		this.multi.onMessage(this.onResponseHandler);
