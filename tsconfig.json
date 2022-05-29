@@ -24,7 +24,7 @@
 
 		//"sourceMap": true,
 
-		"importHelpers": true
+		"importHelpers": true // tslib
 	},
 	"include": ["src"],
 	"exclude": ["src/beta", "src/test"],
