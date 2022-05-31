@@ -1,7 +1,14 @@
 import { Messages, QRCodeGenerator } from '.'
 
 
-const qr = new QRCodeGenerator('png')
+const qrPng = new QRCodeGenerator('png')
 
-qr.generate("testing it")
-qr.save(__dirname)
+qrPng.generate("testing it")
+qrPng.save('wilhelm')
+
+
+const qrSvg = new QRCodeGenerator('svg')
+
+qrSvg.generate("testing it")
+qrSvg.save('winnie')
+
