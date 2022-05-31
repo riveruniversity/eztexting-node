@@ -1,5 +1,5 @@
 # eztexting-node
-📨 Send single, bulk and bulk individual SMS and MMS [node-libcurl](https://www.npmjs.com/package/node-libcurl) using the EZTexting REST API.
+📨 Send single, bulk and bulk individual SMS and MMS with [node-libcurl](https://www.npmjs.com/package/node-libcurl) using the EZTexting REST API.
 
 🔀 Requests are being send async via the libcurl Multi and Easy handler. 
 
