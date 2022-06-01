@@ -8,4 +8,4 @@ export declare const color: {
     turquoise: number;
     white: number;
 };
-export declare function log(location: string, msg: string | any, color: number): void;
+export declare function log(location: string, msg: any, color1?: number, textColor?: number): void;

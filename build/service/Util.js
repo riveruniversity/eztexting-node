@@ -11,7 +11,9 @@ exports.color = {
     'turquoise': 36,
     'white': 37
 };
-function log(location, msg, color) {
-    console.info("\u001B[".concat(color, "m[%s] \u001B[36m%s\u001B[0m"), location, msg);
+function log(location, msg, color1, textColor) {
+    if (color1 === void 0) { color1 = exports.color.turquoise; }
+    if (textColor === void 0) { textColor = exports.color.white; }
+    console.info("\u001B[".concat(color1, "m[%s] \u001B[").concat(textColor, "m%s\u001B[0m"), location, msg);
 }
 exports.log = log;
