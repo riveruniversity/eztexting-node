@@ -82,7 +82,40 @@ new Messages(format).sendMessage(individualMessages, 'callback')
 
 # Send a generated QR Code as picture to specific phone numbers
 
+### Create PNG Buffer with Promise handler
+
 ```javascript
+
+import { Messages, QRCodeGenerator, OutputFormat, StyleOptions } from ".";
+
+const qr = new QRCodeGenerator();
+
+qr.generate("png", "Willie")
+	 .then((buffer: Buffer) => {var base64 = buffer.toString("base64")})
+	 .catch((err: Error) => console.error(err));
+
+```
+
+### Create SVG and save as file
+
+```javascript
+
+const style: StyleOptions = {"width":300,"height":300,"data":"https://qr-code-styling.com","dotsOptions":{"type":"extra-rounded","color":"#6a1a4c"}}
+
+const qr = new QRCodeGenerator();
+qr.generate("svg", '', style);
+
+// Optional parameter ([filename, dir])
+// If no filename is passed, the filename is the current unix timestamp
+qr.save("StyleWebsite");
+
+```
+
+
+### Send QR Code to Phone Number 
+
+```javascript
+
 🚧 Working on it...
 ```
 
