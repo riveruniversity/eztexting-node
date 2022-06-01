@@ -1,4 +1,6 @@
-export const defaultStyle = {
+import  { StyleOptions } from '../types/QRCode'
+
+export const defaultStyle: StyleOptions  = {
 	width: 320,
 	height: 320,
 	margin: 0,
