@@ -6,7 +6,7 @@ export interface Message {
     Subject?: string;
     Message?: string;
     MessageTypeID?: '1' | '2' | '3';
-    FileID?: string;
+    FileID?: string | number;
 	StampToSend?: string;
 }
 
@@ -16,5 +16,3 @@ export interface PostData extends Message, EZLogin {}
 // yyyy-mm-dd HH:MM
 export type EZTimeStamp = `${number}${number}${number}${number}-${number}${number}-${number}${number} ${number}${number}:${number}${number}`
 export type PhoneNumber = `${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}`
-
-export type ResponseFormat = 'json' | 'xml';

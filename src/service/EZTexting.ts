@@ -5,16 +5,6 @@ import dotenv from 'dotenv';
 import { certificate } from "../conf/cert";
 
 
-export function getTimestamp (stringTime: string | undefined) {
-
-    if(!stringTime) return ''.toString();
-    
-    const dateTime = new Date(stringTime);
-    const timestamp = dateTime.getTime() / 1000;
-    console.log(timestamp)
-    return timestamp.toString();
-}
-
 export function checkLoginInfo() {
 	
 	if (!process.env.USR || !process.env.PWD)

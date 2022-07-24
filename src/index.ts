@@ -1,8 +1,22 @@
+// EZ Texting Base
+import { ResponseFormat } from './types/EZTexting'
+export { ResponseFormat }
+
 // EZ Texting Endpoint Messages
 import { Messages } from './lib/Messages'
-import { Message, ResponseFormat } from './types/Messages'
 export { Messages }
-export { Message, ResponseFormat }
+
+import { Message } from './types/Messages'
+export { Message }
+
+
+// EZ Texting Endpoint MediaFiles
+import { MediaFiles } from './lib/MediaFiles'
+export { MediaFiles }
+
+import { MediaFile } from './types/MediaFiles'
+export { MediaFile }
+
 
 // QR Code Generator
 import { QRCodeGenerator } from './service/QRCode'

@@ -3,17 +3,19 @@ import { Curl, Easy, Multi, CurlCode } from "node-libcurl";
 
 // Services
 import * as EZService from "../service/EZTexting";
+import * as Util from '../service/Util'
 import { setMessageParams } from '../service/Messages';
 
 // Types
-import { Message, PostData, ResponseFormat } from "../types/Messages";
-import { EZLogin, CurlConf } from "../types/EZTexting";
+import { EZLogin, MessagesConf, ResponseFormat} from "../types/EZTexting";
+import { Message, PostData } from "../types/Messages";
+import { Log } from "../service/Util";
 
 // Conf
 import { conf } from '../conf/curl'
 
 
-export class Messages implements CurlConf {
+export class Messages implements MessagesConf {
 
 	baseUrl = conf.baseUrl
 	apiUrl = '/sending/messages?format='
@@ -50,7 +52,7 @@ export class Messages implements CurlConf {
 
 	}
 
-	setCurlOptions(message: Message, i: number) {
+	private setCurlOptions(message: Message, i: number) {
 		const handle = new Easy();
 		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + this.format + `&handle=${i}`);
 		handle.setOpt(Curl.option.POST, true);
@@ -67,7 +69,7 @@ export class Messages implements CurlConf {
 	}
 
 
-	onResponseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
+	private onResponseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
 		const responseCode = handle.getInfo("RESPONSE_CODE").data;
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
 
@@ -87,13 +89,27 @@ export class Messages implements CurlConf {
 		if (error) {
 			console.log(handlePhone +	' returned error: "' +	error.message +	'" with errcode: ' + errorCode);
 			//_console.log(error)
+
+			var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: error.message}
+			Util.logStatus(log)
+
 		} else {
 			for (let i = 0; i < handleData.length; i++) {
 				responseData += handleData[i].toString();
 			}
-	
-			console.log(`↩️  ${responseData}`)
-			console.log(handlePhone + " returned response code: " + responseCode);
+
+			console.log(`↩️ `, responseData)
+			console.log(handlePhone + " returned response code: ", responseCode);
+
+
+			const json = JSON.parse(responseData.substring(4)) // remove preceding 'null'
+
+			if(responseCode == 201) 
+				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: ''}
+			else
+				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors}
+
+			Util.logStatus(log)
 		}
 	
 		// we are done with this handle, remove it from the Multi instance and close it
@@ -107,7 +123,7 @@ export class Messages implements CurlConf {
 		}
 	}
 
-	onDataHandler (handle: Easy, data: Buffer, size: number, nmemb: number) {
+	private onDataHandler (handle: Easy, data: Buffer, size: number, nmemb: number) {
 
 		/*
 		console.log("\nonDataHandler: =======================")
@@ -125,7 +141,7 @@ export class Messages implements CurlConf {
 		return size * nmemb;
 	}
 
-	createPostData(message: Message) {
+	private createPostData(message: Message) {
 	
 		const postLogin: EZLogin = EZService.checkLoginInfo();
 		const postMessage: Message  = setMessageParams(message)

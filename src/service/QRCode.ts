@@ -3,7 +3,7 @@ import nodeCanvas from "canvas";
 const { JSDOM } = require("jsdom");
 const fs = require("fs");
 const fse = require("fs-extra");
-const path = require("path");
+import path from "path";
 
 import { color, log } from "./Util";
 import { defaultStyle } from "../conf/qrcode";

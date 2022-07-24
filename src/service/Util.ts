@@ -1,3 +1,8 @@
+// Save log
+import path from "path";
+const fs = require("fs");
+
+
 export const color = {
     'black': 30,
     'red': 31,
@@ -12,4 +17,52 @@ export const color = {
 export function log(location: string, msg: any, color1: number = color.turquoise, textColor: number = color.white) {
 
     console.info(`\x1b[${color1}m[%s] \x1b[${textColor}m%s\x1b[0m`, location, msg);
+}
+
+
+export function getDateTime() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = ("0" + (now.getMonth() + 1)).slice(-2);
+    const day = ("0" + now.getDate()).slice(-2);
+
+    const hour = ("0" + now.getHours()).slice(-2);
+    const minute = ("0" + now.getMinutes()).slice(-2);
+    const second = ("0" + now.getSeconds()).slice(-2);
+
+    // YYYY-MM-DD hh:mm:ss
+    const formatted = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+
+    return formatted;
+}
+
+
+export function getTimestamp (stringTime: string | undefined) {
+
+    if(!stringTime) return ''.toString();
+    
+    const dateTime = new Date(stringTime);
+    console.log('dateTime', dateTime)
+    const timestamp = dateTime.getTime() / 1000;
+    console.log('timestamp', timestamp)
+    return timestamp.toString();
+}
+
+
+export interface Log {
+    location: string;
+    status: 'Error' | 'Success';
+    message: string;
+    phone?: string;
+    params?: object;
+}
+
+export async function logStatus(log: Log) {
+
+    console.log("🗒️  logging!");
+
+    const file = path.resolve(process.cwd(), 'logs', `${log.location}.log`);
+	const msg = `${getDateTime()} | ${log.status}: ${log.phone} | ${log.message}\n`;
+	fs.writeFileSync(file, msg, {flag: 'a+'}); //r w+
 }

@@ -1,5 +1,5 @@
 // Services
-import * as util from "./EZTexting";
+import * as util from "./Util";
 
 // Types
 import { Message } from "../types/Messages";
