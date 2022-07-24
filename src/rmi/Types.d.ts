@@ -3,4 +3,5 @@ export interface Attendee {
 	phone: string;
 	barcode: string;
 	fam: boolean;
+	file?: number;
 }

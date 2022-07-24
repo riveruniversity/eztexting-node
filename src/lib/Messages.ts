@@ -7,7 +7,7 @@ import * as Util from '../service/Util'
 import { setMessageParams } from '../service/Messages';
 
 // Types
-import { EZLogin, MessagesConf, ResponseFormat} from "../types/EZTexting";
+import { EZLogin, MultiConf, ResponseFormat} from "../types/EZTexting";
 import { Message, PostData } from "../types/Messages";
 import { Log } from "../service/Util";
 
@@ -15,7 +15,7 @@ import { Log } from "../service/Util";
 import { conf } from '../conf/curl'
 
 
-export class Messages implements MessagesConf {
+export class Messages implements MultiConf {
 
 	baseUrl = conf.baseUrl
 	apiUrl = '/sending/messages?format='
@@ -40,7 +40,7 @@ export class Messages implements MessagesConf {
 	}
 
 
-	sendMessage (messages: Message[] , callback: any) {
+	sendMessages (messages: Message[] , callback: any) {
 
 		console.log("🚀 sendMessage");
 		
@@ -72,19 +72,14 @@ export class Messages implements MessagesConf {
 	private onResponseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
 		const responseCode = handle.getInfo("RESPONSE_CODE").data;
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
-
-		console.log(`🔗 handleUrl:`)
-		console.log(handleUrl)
-	
 		const handleIndex: number = this.handles.indexOf(handle);
-		const handleData: Buffer = this.handlesData[handleIndex];
+		const handleData: Buffer[] = this.handlesData[handleIndex];
 		const handlePhone: string | any = this.messages[handleIndex].PhoneNumbers;
 	
-		let responseData: Buffer | null | any = null;
 	
 		console.log("# of handles active: " + this.multi.getCount());
-	
-		console.log("🔧  handle: " + handleIndex);
+		console.log("📨  message: " + handleIndex);
+		console.log(`🔗 handleUrl:`, handleUrl.data)
 	
 		if (error) {
 			console.log(handlePhone +	' returned error: "' +	error.message +	'" with errcode: ' + errorCode);
@@ -94,17 +89,15 @@ export class Messages implements MessagesConf {
 			Util.logStatus(log)
 
 		} else {
-			for (let i = 0; i < handleData.length; i++) {
-				responseData += handleData[i].toString();
-			}
+
+			const responseData: string = handleData.join().toString();
+			const json = JSON.parse(responseData);
 
 			console.log(`↩️ `, responseData)
 			console.log(handlePhone + " returned response code: ", responseCode);
+			
 
-
-			const json = JSON.parse(responseData.substring(4)) // remove preceding 'null'
-
-			if(responseCode == 201) 
+			if(responseCode == 201 || responseCode == 200) 
 				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: ''}
 			else
 				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors}
@@ -116,8 +109,9 @@ export class Messages implements MessagesConf {
 		this.multi.removeHandle(handle);
 		handle.close();
 	
+		// >>> All finished
 		if (++this.finished === this.messages.length) {
-			console.log("🚁 finished all requests!");
+			console.log("🚁 all messages sent out!");
 			// remember to close the multi instance too, when you are done with it.
 			this.multi.close();
 		}

@@ -2,57 +2,52 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const axios = require('axios');
-const fse = require("fs-extra");
 const __1 = require("..");
-//import { attendees } from './attendees';
+//[]import { attendees } from './attendees';
+// Testing /*
 const attendees = [
-    //{'name' : "Mikela", 'phone' : '8082053678', 'barcode' : '39966413496402920759001', 'fam' : false},
-    { 'name': "Wilhelm", 'phone': '8134507575', 'barcode': '41404608996650941709001', 'fam': false }
+    { 'name': "Mikela", 'phone': '8134507575', 'barcode': '39966413496402920759001', 'fam': false },
+    { 'name': "Wilhelm", 'phone': '8134507575', 'barcode': '41404608996650941709001', 'fam': true }
 ];
 const format = 'json';
 const media = new __1.MediaFiles(format);
 const messages = new __1.Messages(format);
-const attendeeList = getAttendees(attendees);
-function getAttendees(attendees) {
+const timestamp = ''; //! 2022-07-24 06:30
+sendBulkMessages();
+function sendBulkMessages() {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        createBarcodes(attendees);
+        const attendeeMediaList = yield media.createMediaFiles(attendees, { filetype: 'png', url: `https://rmi-texting.herokuapp.com/qr/show/` });
+        createMessages(attendeeMediaList, timestamp);
+    });
+}
+function createMessages(attendees, timestamp) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const individualMessages = [];
         for (let i in attendees) {
             const attendee = attendees[i];
-            const last = Number(i) + 1 == attendees.length ? true : false;
-            const file = yield getMediaFile(attendee.barcode, last);
             if (!attendee.fam)
-                var message = `Good morning ${attendee.name}. Show this fast pass at the registration.`;
+                var message = `Good morning ${attendee.name}. When you arrive at the conference, show your fast pass at the registration.`;
             else
                 var message = `${attendee.name}'s fast pass`;
-            individualMessages.push({ PhoneNumbers: attendee.phone, StampToSend: '2022-07-24 02:05', MessageTypeID: '3', Message: message, FileID: file.ID });
+            individualMessages.push({ PhoneNumbers: attendee.phone, StampToSend: timestamp, MessageTypeID: '3', Message: message, FileID: attendee.file });
         }
-        messages.sendMessage(individualMessages, 'callback');
+        messages.sendMessages(individualMessages, 'callback');
     });
 }
-function getMediaFile(barcode, last) {
+function createBarcodes(attendees) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
-        const created = yield createBarcode(barcode);
-        console.log('created', created);
-        const file = yield media.createMediaFile(`https://rmi-texting.herokuapp.com/qr/show/${barcode}.png`, last);
-        //.then((value: any) => console.log(value.ID))
-        //.catch(console.log)
-        return file;
-    });
-}
-function createBarcode(barcode) {
-    return tslib_1.__awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            axios
-                .get(`https://rmi-texting.herokuapp.com/qr/create/${barcode}.png`)
-                .then((res) => {
+        for (let attendee of attendees) {
+            yield axios.get(`https://rmi-texting.herokuapp.com/qr/create/${attendee.barcode}.png`);
+            /*
+            .then((res: { status: any; }) => {
                 console.log(`statusCode: ${res.status}`);
                 //console.log(res);
-                resolve(true);
             })
-                .catch((error) => {
+            .catch((error: any) => {
                 console.error(error);
-                reject(false);
             });
-        });
+            */
+        }
     });
 }

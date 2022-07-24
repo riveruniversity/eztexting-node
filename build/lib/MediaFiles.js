@@ -6,6 +6,7 @@ const tslib_1 = require("tslib");
 const node_libcurl_1 = require("node-libcurl");
 // Services
 const EZService = tslib_1.__importStar(require("../service/EZTexting"));
+const Util = tslib_1.__importStar(require("../service/Util"));
 // Conf
 const curl_1 = require("../conf/curl");
 class MediaFiles {
@@ -13,68 +14,101 @@ class MediaFiles {
         this.baseUrl = curl_1.conf.baseUrl;
         this.apiUrl = '/sending/files?format=';
         this.format = 'json';
+        this.handles = [];
+        this.handlesData = [];
+        this.finished = 0;
         EZService.initDotenv();
         this.login = EZService.checkLoginInfo();
         this.format = format;
-        this.curl = new node_libcurl_1.Curl();
+        this.multi = new node_libcurl_1.Multi();
     }
-    createMediaFile(source, closeConnection = true) {
-        return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            console.log("🚀 createMediaFile");
-            console.log(source);
-            const promise = new Promise((resolve, reject) => {
-                this.curl.on('end', (statusCode, body, headers, curlInstance) => {
-                    console.info('Status Code: ', statusCode);
-                    //- console.info('Headers: ', headers)
-                    //- console.info('Body length: ', body.length)
-                    //- console.info('Body: ', body)
-                    const Jsonfile = JSON.parse(body);
-                    const mediaFile = Jsonfile.Response.Entry;
-                    // always close the `Curl` instance when you don't need it anymore
-                    // Keep in mind we can do multiple requests with the same `Curl` instance
-                    //  before it's closed, we just need to set new options if needed
-                    //  and call `.perform()` again.
-                    //r this.close = this.curl.close.bind(this.curl);
-                    if (closeConnection)
-                        this.curl.close();
-                    resolve(mediaFile);
-                });
-                this.curl.on('error', (error, errorCode) => {
-                    console.error('Error: ', error);
-                    console.error('Code: ', errorCode);
-                    this.curl.close();
-                    reject(error);
-                });
-                this.curl.perform();
-            });
-            this.setCurlOptions(source);
-            //this.setEndHandler(closeConnection);
-            //this.setErrorHandler();
-            return promise;
+    createMediaFiles(attendees, params) {
+        console.log("🚀 createMediaFiles");
+        this.attendees = attendees;
+        return new Promise((resolve, reject) => {
+            const onResponseHandler = (error, handle, errorCode) => {
+                const responseCode = handle.getInfo("RESPONSE_CODE").data;
+                const handleUrl = handle.getInfo("EFFECTIVE_URL");
+                const handleIndex = this.handles.indexOf(handle);
+                const handleData = this.handlesData[handleIndex];
+                const handlePhone = this.attendees[handleIndex].phone;
+                console.log("# of handles active: " + this.multi.getCount());
+                console.log("☁️  media file: " + handleIndex);
+                console.log(`🔗 handleUrl:`, handleUrl.data);
+                if (error) {
+                    console.log(handlePhone + ' returned error: "' + error.message + '" with errcode: ' + errorCode);
+                    //_console.log(error)
+                    var log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message };
+                    Util.logStatus(log);
+                    this.attendees[handleIndex].file = 0;
+                }
+                else {
+                    //r let responseData: string = '';
+                    //r for (let i = 0; i < handleData.length; i++) {
+                    //r 	responseData += handleData[i].toString();
+                    //r }
+                    //r const json = JSON.parse(responseData.substring(4)) // remove preceding 'null'
+                    const responseData = handleData.join().toString();
+                    const json = JSON.parse(responseData);
+                    console.log(`↩️ `, responseData);
+                    console.log(handlePhone + " returned response code: ", responseCode);
+                    if (responseCode == 201 || responseCode == 200) {
+                        const mediaFile = json.Response.Entry;
+                        this.attendees[handleIndex].file = mediaFile.ID;
+                        var log = { status: 'Success', location: 'media_files', phone: handlePhone, message: mediaFile.ID.toString() };
+                    }
+                    else {
+                        this.attendees[handleIndex].file = 0;
+                        var log = { status: 'Error', location: 'media_files', phone: handlePhone, message: json.Response.Errors };
+                    }
+                    Util.logStatus(log);
+                }
+                // we are done with this handle, remove it from the Multi instance and close it
+                this.multi.removeHandle(handle);
+                handle.close();
+                // >>> All finished
+                if (++this.finished === this.attendees.length) {
+                    console.log("🚁 finished creating all media files!");
+                    resolve(this.attendees);
+                    // remember to close the multi instance too, when you are done with it.
+                    this.multi.close();
+                }
+            };
+            this.multi.onMessage(onResponseHandler);
+            for (let i in attendees) {
+                let source = `${params.url + attendees[i].barcode}.${params.filetype}`;
+                this.setCurlOptions(source, +i);
+            }
         });
     }
-    setCurlOptions(source) {
-        this.curl.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + this.format);
-        this.curl.setOpt(node_libcurl_1.Curl.option.POST, true);
-        this.curl.setOpt(node_libcurl_1.Curl.option.POSTFIELDS, this.createPostData(source));
-        this.curl.setOpt(node_libcurl_1.Curl.option.CAINFO, EZService.getCertificate());
-        this.curl.setOpt(node_libcurl_1.Curl.option.FOLLOWLOCATION, true);
-    }
-    setEndHandler(closeConnection) {
-        this.curl.on('end', (statusCode, body, headers, curlInstance) => {
+    setCurlOptions(source, i) {
+        const handle = new node_libcurl_1.Easy();
+        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + this.format + `&handle=${i}`);
+        handle.setOpt(node_libcurl_1.Curl.option.POST, true);
+        handle.setOpt(node_libcurl_1.Curl.option.POSTFIELDS, this.createPostData(source));
+        handle.setOpt(node_libcurl_1.Curl.option.CAINFO, EZService.getCertificate());
+        handle.setOpt(node_libcurl_1.Curl.option.FOLLOWLOCATION, true);
+        handle.setOpt(node_libcurl_1.Curl.option.WRITEFUNCTION, (data, size, nmemb) => {
+            return this.onDataHandler(handle, data, size, nmemb);
         });
+        this.handlesData.push([]);
+        this.handles.push(handle);
+        this.multi.addHandle(handle);
     }
-    setErrorHandler() {
-        this.curl.on('error', (error, errorCode) => {
-        });
+    onDataHandler(handle, data, size, nmemb) {
+        const key = this.handles.indexOf(handle);
+        this.handlesData[key].push(data);
+        /*
+        console.log("onDataHandler: =======================")
+    
+        console.log("#️⃣  handle: ", key)
+        console.log("🗄️  data: ", data)
+        */
+        return size * nmemb;
     }
     createPostData(source) {
         const postLogin = EZService.checkLoginInfo();
-        const postParams = { Source: source };
-        const postData = Object.assign(Object.assign({}, postLogin), postParams);
-        const postString = new URLSearchParams(postData).toString();
-        const params = `User=${postLogin.User}&Password=${postLogin.Password}&Source=${source}`;
-        return params;
+        return `User=${postLogin.User}&Password=${postLogin.Password}&Source=${source}`;
     }
 }
 exports.MediaFiles = MediaFiles;

@@ -1,16 +1,21 @@
-import { Curl } from "node-libcurl";
-import { EZLogin, MediaFilesConf, ResponseFormat } from "../types/EZTexting";
-import { MediaFile } from "../types/MediaFiles";
-export declare class MediaFiles implements MediaFilesConf {
+/// <reference types="node" />
+import { Easy, Multi } from "node-libcurl";
+import { EZLogin, MultiConf, ResponseFormat } from "../types/EZTexting";
+import { MediaFileOptions } from "../types/MediaFiles";
+import { Attendee } from "../rmi/Types";
+export declare class MediaFiles implements MultiConf {
     baseUrl: string;
     apiUrl: string;
     login: EZLogin;
     format: ResponseFormat;
-    curl: Curl;
+    attendees: Attendee[];
+    multi: Multi;
+    handles: Easy[];
+    handlesData: Buffer[] | any;
+    finished: number;
     constructor(format: ResponseFormat);
-    createMediaFile(source: string, closeConnection?: boolean): Promise<MediaFile | unknown>;
+    createMediaFiles(attendees: Attendee[], params: MediaFileOptions): Promise<Attendee[]>;
     private setCurlOptions;
-    private setEndHandler;
-    private setErrorHandler;
+    private onDataHandler;
     private createPostData;
 }

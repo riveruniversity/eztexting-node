@@ -22,14 +22,12 @@ class Messages {
         this.onResponseHandler = (error, handle, errorCode) => {
             const responseCode = handle.getInfo("RESPONSE_CODE").data;
             const handleUrl = handle.getInfo("EFFECTIVE_URL");
-            console.log(`🔗 handleUrl:`);
-            console.log(handleUrl);
             const handleIndex = this.handles.indexOf(handle);
             const handleData = this.handlesData[handleIndex];
             const handlePhone = this.messages[handleIndex].PhoneNumbers;
-            let responseData = null;
             console.log("# of handles active: " + this.multi.getCount());
-            console.log("🔧  handle: " + handleIndex);
+            console.log("📨  message: " + handleIndex);
+            console.log(`🔗 handleUrl:`, handleUrl.data);
             if (error) {
                 console.log(handlePhone + ' returned error: "' + error.message + '" with errcode: ' + errorCode);
                 //_console.log(error)
@@ -37,13 +35,11 @@ class Messages {
                 Util.logStatus(log);
             }
             else {
-                for (let i = 0; i < handleData.length; i++) {
-                    responseData += handleData[i].toString();
-                }
+                const responseData = handleData.join().toString();
+                const json = JSON.parse(responseData);
                 console.log(`↩️ `, responseData);
                 console.log(handlePhone + " returned response code: ", responseCode);
-                const json = JSON.parse(responseData.substring(4)); // remove preceding 'null'
-                if (responseCode == 201)
+                if (responseCode == 201 || responseCode == 200)
                     var log = { status: 'Success', location: 'messages', phone: handlePhone, message: '' };
                 else
                     var log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors };
@@ -52,8 +48,9 @@ class Messages {
             // we are done with this handle, remove it from the Multi instance and close it
             this.multi.removeHandle(handle);
             handle.close();
+            // >>> All finished
             if (++this.finished === this.messages.length) {
-                console.log("🚁 finished all requests!");
+                console.log("🚁 all messages sent out!");
                 // remember to close the multi instance too, when you are done with it.
                 this.multi.close();
             }
@@ -64,7 +61,7 @@ class Messages {
         this.multi = new node_libcurl_1.Multi();
         this.multi.onMessage(this.onResponseHandler);
     }
-    sendMessage(messages, callback) {
+    sendMessages(messages, callback) {
         console.log("🚀 sendMessage");
         this.messages = messages;
         for (let i in messages) {

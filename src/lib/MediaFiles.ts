@@ -1,37 +1,36 @@
 // Dependencies
 import { Curl, Easy, Multi, CurlCode } from "node-libcurl";
 
-import path, { resolve } from "path";
-
 
 // Services
 import * as EZService from "../service/EZTexting";
 import * as Util from '../service/Util'
-import { setMessageParams } from '../service/Messages';
 
 
 // Types
-import { EZLogin, MediaFilesConf, ResponseFormat } from "../types/EZTexting";
-import { MediaFile, PostData } from "../types/MediaFiles";
+import { EZLogin, MultiConf, ResponseFormat} from "../types/EZTexting";
+import { MediaFile, MediaFileOptions } from "../types/MediaFiles";
 import { Log } from "../service/Util";
+import { Attendee } from "../rmi/Types";
 
 
 // Conf
 import { conf } from '../conf/curl'
-import { rejects } from "assert";
 
 
-
-export class MediaFiles implements MediaFilesConf {
+export class MediaFiles implements MultiConf {
 
 	baseUrl = conf.baseUrl
 	apiUrl = '/sending/files?format='
 	login: EZLogin;
+	format: ResponseFormat = 'json';
 
-    format: ResponseFormat = 'json';
+	attendees!: Attendee[];
 
-    curl: Curl;
-
+	multi: Multi;
+    handles: Easy [] = [];
+	handlesData: Buffer[] | any = [];
+	finished: number = 0;
 
 	constructor(format: ResponseFormat) {
 		EZService.initDotenv();
@@ -39,102 +38,124 @@ export class MediaFiles implements MediaFilesConf {
 		this.login = EZService.checkLoginInfo();
 		
 		this.format = format
-		this.curl = new Curl();
+		this.multi = new Multi();
 	}
 
 
-	async createMediaFile (source: string , closeConnection: boolean = true): Promise<MediaFile|unknown> {
+	createMediaFiles(attendees: Attendee[] , params: MediaFileOptions): Promise<Attendee[]> {
 
-		console.log("🚀 createMediaFile");
+		console.log("🚀 createMediaFiles");
+		
+		this.attendees = attendees
 
-        console.log(source);
-        
-		const promise = new Promise((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 
-            this.curl.on('end', (statusCode: number, body: string, headers: any, curlInstance: Curl) => {
-                console.info('Status Code: ', statusCode)
-                //- console.info('Headers: ', headers)
-                //- 
+			const onResponseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
+				const responseCode = handle.getInfo("RESPONSE_CODE").data;
+				const handleUrl = handle.getInfo("EFFECTIVE_URL");
+				const handleIndex: number = this.handles.indexOf(handle);
+				const handleData: Buffer[] = this.handlesData[handleIndex];
+				const handlePhone: string | any = this.attendees[handleIndex].phone;
+			
+				console.log("# of handles active: " + this.multi.getCount());
+				console.log("☁️  media file: " + handleIndex);
+				console.log(`🔗 handleUrl:`, handleUrl.data)
+			
+				if (error) {
+					console.log(handlePhone +	' returned error: "' +	error.message +	'" with errcode: ' + errorCode);
+					//_console.log(error)
+		
+					var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message}
+					Util.logStatus(log)
+					this.attendees[handleIndex].file = 0
+		
+				} else {
+		
+					//r let responseData: string = '';
+					//r for (let i = 0; i < handleData.length; i++) {
+					//r 	responseData += handleData[i].toString();
+					//r }
+					//r const json = JSON.parse(responseData.substring(4)) // remove preceding 'null'
+		
+					const responseData: string = handleData.join().toString();
+					const json = JSON.parse(responseData);
 
-                const json = JSON.parse(body)
+					console.log(`↩️ `, responseData)
+					console.log(handlePhone + " returned response code: ", responseCode);
+	
+		
+					if(responseCode == 201 || responseCode == 200) {
+						const mediaFile: MediaFile = json.Response.Entry;
+						this.attendees[handleIndex].file = mediaFile.ID
+						var log: Log = { status: 'Success', location: 'media_files', phone: handlePhone, message: mediaFile.ID.toString()}
+					}
+					else {
+						this.attendees[handleIndex].file = 0;
+						var log: Log = { status: 'Error', location: 'media_files', phone: handlePhone, message: json.Response.Errors}
+					}
+					
+					Util.logStatus(log)
+				}
 
-                if(statusCode == 201 || statusCode == 200) {
-                    var log: Log = { status: 'Success', location: 'media_files', phone: source, message: ''}
-                    const mediaFile: MediaFile = json.Response.Entry
+			
+				// we are done with this handle, remove it from the Multi instance and close it
+				this.multi.removeHandle(handle);
+				handle.close();
+			
+				// >>> All finished
+				if (++this.finished === this.attendees.length) {
+					console.log("🚁 finished creating all media files!");
+					resolve(this.attendees)
 
-                    // always close the `Curl` instance when you don't need it anymore
-                    // Keep in mind we can do multiple requests with the same `Curl` instance
-                    //  before it's closed, we just need to set new options if needed
-                    //  and call `.perform()` again.
-                    //r this.close = this.curl.close.bind(this.curl);
-                    if (closeConnection) this.curl.close();
-                    resolve(mediaFile)
-                }
-                    
-                else {
-                    console.info('Body: ', body)
-                    
-                    var log: Log = { status: 'Error', location: 'media_files', phone: source, message: json.Response.Errors}
-                    Util.logStatus(log)
-                    reject(false)
-                }
-                    
+					// remember to close the multi instance too, when you are done with it.
+					this.multi.close();
+				}
+			}
 
-			    
-    
-            })
+			this.multi.onMessage(onResponseHandler);
+		
+			for (let i in attendees) {
+				let source = `${params.url + attendees[i].barcode}.${params.filetype}`
+				this.setCurlOptions(source, +i)
+			}
+		})
+	}
 
-            this.curl.on('error', (error, errorCode) => {
-                console.error('Error: ', error)
-                console.error('Code: ', errorCode)
-                this.curl.close()
-                reject(error)
-            })
-
-            this.curl.perform();
-            
-        })
-
-		this.setCurlOptions(source);
-        //this.setEndHandler(closeConnection);
-        //this.setErrorHandler();
-        
-        return promise
+	private setCurlOptions(source: string, i: number) {
+		const handle = new Easy();
+		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + this.format + `&handle=${i}`);
+		handle.setOpt(Curl.option.POST, true);
+		handle.setOpt(Curl.option.POSTFIELDS, this.createPostData(source));
+		handle.setOpt(Curl.option.CAINFO, EZService.getCertificate());
+		handle.setOpt(Curl.option.FOLLOWLOCATION, true);
+		handle.setOpt(Curl.option.WRITEFUNCTION, (data: Buffer, size: number, nmemb: number) => {
+			return this.onDataHandler(handle, data, size, nmemb)
+		});
+	
+		this.handlesData.push([]);
+		this.handles.push(handle);
+		this.multi.addHandle(handle);
 	}
 
 
-	private setCurlOptions(source: string) {
-		this.curl.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + this.format);
-		this.curl.setOpt(Curl.option.POST, true);
-		this.curl.setOpt(Curl.option.POSTFIELDS, this.createPostData(source));
-		this.curl.setOpt(Curl.option.CAINFO, EZService.getCertificate());
-		this.curl.setOpt(Curl.option.FOLLOWLOCATION, true);
+	private onDataHandler (handle: Easy, data: Buffer, size: number, nmemb: number) {
+
+		const key = this.handles.indexOf(handle);
+		this.handlesData[key].push(data);
+
+		/*
+		console.log("onDataHandler: =======================")
+	
+		console.log("#️⃣  handle: ", key)
+		console.log("🗄️  data: ", data)
+		*/
+	
+		return size * nmemb;
 	}
 
-
-    private setEndHandler(closeConnection: boolean) {
-        this.curl.on('end', (statusCode: number, body: string, headers: any, curlInstance: Curl) => {
-
-        })
-    }
-
-
-    private setErrorHandler() {
-        this.curl.on('error', (error, errorCode) => {
-
-        })
-    }
-
-    
 	private createPostData(source: string) {
 	
 		const postLogin: EZLogin = EZService.checkLoginInfo();
-		const postParams: Object  = {Source: source}
-		const postData: PostData | any = {...postLogin, ...postParams}
-        const postString = new URLSearchParams(postData).toString();
-
-        const params = `User=${postLogin.User}&Password=${postLogin.Password}&Source=${source}`
-        
-		return params
+        return `User=${postLogin.User}&Password=${postLogin.Password}&Source=${source}`
 	}
 }

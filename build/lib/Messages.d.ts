@@ -1,8 +1,8 @@
 /// <reference types="node" />
 import { Easy, Multi } from "node-libcurl";
-import { EZLogin, MessagesConf, ResponseFormat } from "../types/EZTexting";
+import { EZLogin, MultiConf, ResponseFormat } from "../types/EZTexting";
 import { Message } from "../types/Messages";
-export declare class Messages implements MessagesConf {
+export declare class Messages implements MultiConf {
     baseUrl: string;
     apiUrl: string;
     login: EZLogin;
@@ -13,7 +13,7 @@ export declare class Messages implements MessagesConf {
     handlesData: Buffer[] | any;
     finished: number;
     constructor(format: ResponseFormat);
-    sendMessage(messages: Message[], callback: any): void;
+    sendMessages(messages: Message[], callback: any): void;
     private setCurlOptions;
     private onResponseHandler;
     private onDataHandler;

@@ -88,9 +88,10 @@ qr.save("testPic", __dirname);
 // >>> Create new Media File from URL
 const format: ResponseFormat = 'json';
 const media = new MediaFiles(format);
-
+/*
 media
-	.createMediaFile(__dirname + '\\testPic.png', true)
+	.createMediaFiles(__dirname + '\\testPic.png', true)
 	.then((value: any) => console.log(value.ID))
 	.catch(console.log)
 
+*/

@@ -14,12 +14,12 @@ export interface BaseCurlConf {
     format: ResponseFormat;
 }
 
-export interface MessagesConf extends BaseCurlConf {
+export interface MultiConf extends BaseCurlConf {
     multi: Multi;
     handles: Easy [];
 }
 
-export interface MediaFilesConf extends BaseCurlConf {
+export interface SingleConf extends BaseCurlConf {
     curl: Curl;
 }
 

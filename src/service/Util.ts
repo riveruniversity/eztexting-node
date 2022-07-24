@@ -52,7 +52,7 @@ export function getTimestamp (stringTime: string | undefined) {
 
 export interface Log {
     location: string;
-    status: 'Error' | 'Success';
+    status: 'Error' | 'Success' | 'Curl Error';
     message: string;
     phone?: string;
     params?: object;

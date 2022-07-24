@@ -6,4 +6,10 @@ export interface MediaFile {
     Path: string;
 }
 
+export interface MediaFileOptions {
+    filetype: 'png' | 'jpg' | 'jpeg' | 'gif' | 'mp3' | 'wav' | 'mp4' | '3gp';
+    url?: string;
+    path?: string;
+}
+
 export interface PostData extends MediaFile, EZLogin {}

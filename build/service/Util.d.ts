@@ -13,7 +13,7 @@ export declare function getDateTime(): string;
 export declare function getTimestamp(stringTime: string | undefined): string;
 export interface Log {
     location: string;
-    status: 'Error' | 'Success';
+    status: 'Error' | 'Success' | 'Curl Error';
     message: string;
     phone?: string;
     params?: object;

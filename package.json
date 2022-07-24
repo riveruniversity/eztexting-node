@@ -4,7 +4,7 @@
   "description": "Send async single, bulk and bulk individual SMS and MMS node-libcurl using the EZTexting REST API.",
   "main": "./build/index.js",
   "scripts": {
-    "start": "nodemon src/index.ts",
+    "start": "node build/index.js",
     "rmi": "nodemon src/rmi/masstext.ts",
     "test": "nodemon src/tests.ts",
     "test-messages": "nodemon src/test.messages.ts",
