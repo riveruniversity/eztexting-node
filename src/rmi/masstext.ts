@@ -6,12 +6,14 @@ import { Message, MediaFile, ResponseFormat } from '..'
 
 import { Attendee } from './Types'
 
-//import { attendees } from './attendees';
+import { attendees } from './attendees';
 
+// Testing /*
+/*
 const attendees: Attendee[] = [
-	//{'name' : "Mikela", 'phone' : '8082053678', 'barcode' : '39966413496402920759001', 'fam' : false},
+	{'name' : "Mikela", 'phone' : '8082053678', 'barcode' : '39966413496402920759001', 'fam' : false},
 	{'name' : "Wilhelm", 'phone' : '8134507575', 'barcode' : '41404608996650941709001', 'fam' : false}
-]
+]*/
 
 
 const format: ResponseFormat = 'json';
@@ -32,12 +34,14 @@ async function getAttendees(attendees: Attendee[]) {
 		const last = Number(i)+1 == attendees.length ? true : false;
 		const file: MediaFile = await getMediaFile(attendee.barcode, last)
 
+		if(!file) continue;
+
 		if(!attendee.fam) 
-			var message = `Good morning ${attendee.name}. Show this fast pass at the registration.`
+			var message = `Good morning ${attendee.name}. When you arrive at the conference, show your fast pass at the registration.`
 		else
 			var message = `${attendee.name}'s fast pass`
 
-		individualMessages.push({PhoneNumbers: attendee.phone, StampToSend: '2022-07-24 02:05', MessageTypeID: '3', Message: message, FileID: file.ID});
+		individualMessages.push({PhoneNumbers: attendee.phone, StampToSend: '2022-07-24 06:30', MessageTypeID: '3', Message: message, FileID: file.ID});
 	}
 
 	
@@ -50,7 +54,8 @@ async function getAttendees(attendees: Attendee[]) {
 async function getMediaFile(barcode: string, last: boolean) {
 
 	const created = await createBarcode(barcode)
-	console.log('created', created);
+	
+	if(!created) return false;
 	
 	
 	const file: MediaFile | any = await media.createMediaFile(`https://rmi-texting.herokuapp.com/qr/show/${barcode}.png`, last)

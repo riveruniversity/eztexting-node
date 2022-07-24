@@ -6,11 +6,15 @@ import path, { resolve } from "path";
 
 // Services
 import * as EZService from "../service/EZTexting";
+import * as Util from '../service/Util'
 import { setMessageParams } from '../service/Messages';
+
 
 // Types
 import { EZLogin, MediaFilesConf, ResponseFormat } from "../types/EZTexting";
 import { MediaFile, PostData } from "../types/MediaFiles";
+import { Log } from "../service/Util";
+
 
 // Conf
 import { conf } from '../conf/curl'
@@ -50,19 +54,34 @@ export class MediaFiles implements MediaFilesConf {
             this.curl.on('end', (statusCode: number, body: string, headers: any, curlInstance: Curl) => {
                 console.info('Status Code: ', statusCode)
                 //- console.info('Headers: ', headers)
-                //- console.info('Body length: ', body.length)
-                //- console.info('Body: ', body)
+                //- 
+
+                const json = JSON.parse(body)
+
+                if(statusCode == 201 || statusCode == 200) {
+                    var log: Log = { status: 'Success', location: 'media_files', phone: source, message: ''}
+                    const mediaFile: MediaFile = json.Response.Entry
+
+                    // always close the `Curl` instance when you don't need it anymore
+                    // Keep in mind we can do multiple requests with the same `Curl` instance
+                    //  before it's closed, we just need to set new options if needed
+                    //  and call `.perform()` again.
+                    //r this.close = this.curl.close.bind(this.curl);
+                    if (closeConnection) this.curl.close();
+                    resolve(mediaFile)
+                }
+                    
+                else {
+                    console.info('Body: ', body)
+                    
+                    var log: Log = { status: 'Error', location: 'media_files', phone: source, message: json.Response.Errors}
+                    Util.logStatus(log)
+                    reject(false)
+                }
+                    
+
+			    
     
-                const Jsonfile = JSON.parse(body)
-                const mediaFile: MediaFile =Jsonfile.Response.Entry
-              
-                // always close the `Curl` instance when you don't need it anymore
-                // Keep in mind we can do multiple requests with the same `Curl` instance
-                //  before it's closed, we just need to set new options if needed
-                //  and call `.perform()` again.
-                //r this.close = this.curl.close.bind(this.curl);
-                if (closeConnection) this.curl.close();
-                resolve(mediaFile)
             })
 
             this.curl.on('error', (error, errorCode) => {
