@@ -1,20 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.initDotenv = exports.getCertificate = exports.checkLoginInfo = exports.getTimestamp = void 0;
-var tslib_1 = require("tslib");
+exports.initDotenv = exports.getCertificate = exports.checkLoginInfo = void 0;
+const tslib_1 = require("tslib");
 // Dependencies
-var dotenv_1 = tslib_1.__importDefault(require("dotenv"));
+const dotenv_1 = tslib_1.__importDefault(require("dotenv"));
 // Modules
-var cert_1 = require("../conf/cert");
-function getTimestamp(stringTime) {
-    if (!stringTime)
-        return ''.toString();
-    var dateTime = new Date(stringTime);
-    var timestamp = dateTime.getTime() / 1000;
-    console.log(timestamp);
-    return timestamp.toString();
-}
-exports.getTimestamp = getTimestamp;
+const cert_1 = require("../conf/cert");
 function checkLoginInfo() {
     if (!process.env.USR || !process.env.PWD)
         throw new Error("Missing parameter: 'Username' or 'Password'! Please add environment variables.");

@@ -9,3 +9,13 @@ export declare const color: {
     white: number;
 };
 export declare function log(location: string, msg: any, color1?: number, textColor?: number): void;
+export declare function getDateTime(): string;
+export declare function getTimestamp(stringTime: string | undefined): string;
+export interface Log {
+    location: string;
+    status: 'Error' | 'Success';
+    message: string;
+    phone?: string;
+    params?: object;
+}
+export declare function logStatus(log: Log): Promise<void>;

@@ -1,8 +1,8 @@
 /// <reference types="node" />
-import { Easy, Multi, CurlCode } from "node-libcurl";
-import { Message, ResponseFormat } from "../types/Messages";
-import { EZLogin, CurlConf } from "../types/EZTexting";
-export declare class Messages implements CurlConf {
+import { Easy, Multi } from "node-libcurl";
+import { EZLogin, MessagesConf, ResponseFormat } from "../types/EZTexting";
+import { Message } from "../types/Messages";
+export declare class Messages implements MessagesConf {
     baseUrl: string;
     apiUrl: string;
     login: EZLogin;
@@ -14,8 +14,8 @@ export declare class Messages implements CurlConf {
     finished: number;
     constructor(format: ResponseFormat);
     sendMessage(messages: Message[], callback: any): void;
-    setCurlOptions(message: Message, i: number): void;
-    onResponseHandler: (error: Error, handle: Easy, errorCode: CurlCode) => void;
-    onDataHandler(handle: Easy, data: Buffer, size: number, nmemb: number): number;
-    createPostData(message: Message): string;
+    private setCurlOptions;
+    private onResponseHandler;
+    private onDataHandler;
+    private createPostData;
 }

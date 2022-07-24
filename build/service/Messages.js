@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setMessageParams = void 0;
-var tslib_1 = require("tslib");
+const tslib_1 = require("tslib");
 // Services
-var util = tslib_1.__importStar(require("./EZTexting"));
-var params = {};
-var setMessageParams = function (message) {
+const util = tslib_1.__importStar(require("./Util"));
+const params = {};
+const setMessageParams = (message) => {
     if (message.MessageTypeID)
         setMessageTypeID(message);
     if (message.PhoneNumbers)
@@ -29,8 +29,8 @@ function setPhoneNumbers(message) {
     if (!message.Groups && !message.PhoneNumbers)
         throw new Error("You must include either groups or phone numbers!");
     if (message.PhoneNumbers instanceof Array) {
-        var phoneNumbers = [];
-        for (var i in message.PhoneNumbers) {
+        const phoneNumbers = [];
+        for (let i in message.PhoneNumbers) {
             phoneNumbers.push(cleanNumber(message.PhoneNumbers[i]));
         }
         params.PhoneNumbers = phoneNumbers;
@@ -39,11 +39,11 @@ function setPhoneNumbers(message) {
         params.PhoneNumbers = cleanNumber(message.PhoneNumbers);
 }
 function cleanNumber(number) {
-    var regExp = new RegExp(/\d/, 'g');
-    var matches = number.toString().match(regExp);
-    var cleanNumber = matches ? matches.join('') : '';
+    const regExp = new RegExp(/\d/, 'g');
+    const matches = number.toString().match(regExp);
+    const cleanNumber = matches ? matches.join('') : '';
     if (cleanNumber.length != 10)
-        console.log("Skipped ".concat(cleanNumber, ". Phone number needs to be 10 digits!"));
+        console.log(`Skipped ${cleanNumber}. Phone number needs to be 10 digits!`);
     return cleanNumber;
     //throw new Error("Phone number needs to be 10 digits!")
 }

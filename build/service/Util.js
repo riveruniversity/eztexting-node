@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.log = exports.color = void 0;
+exports.logStatus = exports.getTimestamp = exports.getDateTime = exports.log = exports.color = void 0;
+const tslib_1 = require("tslib");
+// Save log
+const path_1 = tslib_1.__importDefault(require("path"));
+const fs = require("fs");
 exports.color = {
     'black': 30,
     'red': 31,
@@ -11,9 +15,39 @@ exports.color = {
     'turquoise': 36,
     'white': 37
 };
-function log(location, msg, color1, textColor) {
-    if (color1 === void 0) { color1 = exports.color.turquoise; }
-    if (textColor === void 0) { textColor = exports.color.white; }
-    console.info("\u001B[".concat(color1, "m[%s] \u001B[").concat(textColor, "m%s\u001B[0m"), location, msg);
+function log(location, msg, color1 = exports.color.turquoise, textColor = exports.color.white) {
+    console.info(`\x1b[${color1}m[%s] \x1b[${textColor}m%s\x1b[0m`, location, msg);
 }
 exports.log = log;
+function getDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = ("0" + (now.getMonth() + 1)).slice(-2);
+    const day = ("0" + now.getDate()).slice(-2);
+    const hour = ("0" + now.getHours()).slice(-2);
+    const minute = ("0" + now.getMinutes()).slice(-2);
+    const second = ("0" + now.getSeconds()).slice(-2);
+    // YYYY-MM-DD hh:mm:ss
+    const formatted = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    return formatted;
+}
+exports.getDateTime = getDateTime;
+function getTimestamp(stringTime) {
+    if (!stringTime)
+        return ''.toString();
+    const dateTime = new Date(stringTime);
+    console.log('dateTime', dateTime);
+    const timestamp = dateTime.getTime() / 1000;
+    console.log('timestamp', timestamp);
+    return timestamp.toString();
+}
+exports.getTimestamp = getTimestamp;
+function logStatus(log) {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        console.log("🗒️  logging!");
+        const file = path_1.default.resolve(process.cwd(), 'logs', `${log.location}.log`);
+        const msg = `${getDateTime()} | ${log.status}: ${log.phone} | ${log.message}\n`;
+        fs.writeFileSync(file, msg, { flag: 'a+' }); //r w+
+    });
+}
+exports.logStatus = logStatus;
