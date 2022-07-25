@@ -5,3 +5,7 @@ export interface Attendee {
 	fam: boolean;
 	file?: number;
 }
+
+export interface AttendeeWithFile extends Attendee {
+	file: number;
+}

@@ -43,16 +43,14 @@ export function getTimestamp (stringTime: string | undefined) {
     if(!stringTime) return ''.toString();
     
     const dateTime = new Date(stringTime);
-    console.log('dateTime', dateTime)
     const timestamp = dateTime.getTime() / 1000;
-    console.log('timestamp', timestamp)
     return timestamp.toString();
 }
 
 
 export interface Log {
     location: string;
-    status: 'Error' | 'Success' | 'Curl Error';
+    status: 'Error' | 'Success' | 'Curl Error' | 'Log';
     message: string;
     phone?: string;
     params?: object;
@@ -60,9 +58,14 @@ export interface Log {
 
 export async function logStatus(log: Log) {
 
-    console.log("🗒️  logging!");
+    console.log("🗒️  logging " + log.location);
 
     const file = path.resolve(process.cwd(), 'logs', `${log.location}.log`);
 	const msg = `${getDateTime()} | ${log.status}: ${log.phone} | ${log.message}\n`;
 	fs.writeFileSync(file, msg, {flag: 'a+'}); //r w+
 }
+
+
+export function sleep (milliseconds: number) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+  };

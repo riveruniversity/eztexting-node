@@ -40,7 +40,7 @@ export class Messages implements MultiConf {
 	}
 
 
-	sendMessages (messages: Message[] , callback: any) {
+	async sendMessages (messages: Message[] , callback: any): Promise<boolean> {
 
 		console.log("🚀 sendMessage");
 		
@@ -48,8 +48,10 @@ export class Messages implements MultiConf {
 		
 		for (let i in messages) {
 			this.setCurlOptions(messages[i], +i)
+			await Util.sleep(300)
 		}
 
+		return true;
 	}
 
 	private setCurlOptions(message: Message, i: number) {
@@ -76,10 +78,8 @@ export class Messages implements MultiConf {
 		const handleData: Buffer[] = this.handlesData[handleIndex];
 		const handlePhone: string | any = this.messages[handleIndex].PhoneNumbers;
 	
-	
-		console.log("# of handles active: " + this.multi.getCount());
 		console.log("📨  message: " + handleIndex);
-		console.log(`🔗 handleUrl:`, handleUrl.data)
+		//console.log(`🔗 handleUrl:`, handleUrl.data)
 	
 		if (error) {
 			console.log(handlePhone +	' returned error: "' +	error.message +	'" with errcode: ' + errorCode);
@@ -91,19 +91,28 @@ export class Messages implements MultiConf {
 		} else {
 
 			const responseData: string = handleData.join().toString();
-			const json = JSON.parse(responseData);
 
-			console.log(`↩️ `, responseData)
 			console.log(handlePhone + " returned response code: ", responseCode);
-			
+			console.log(`↩️ `, responseData)
 
-			if(responseCode == 201 || responseCode == 200) 
-				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: ''}
-			else
+
+			if(responseCode == 201 || responseCode == 200) {
+				const json = JSON.parse(responseData);
+				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString()}
+			}
+				
+			else if(responseCode == 502) 
+				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData}
+			else {
+				const json = JSON.parse(responseData);
 				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors}
+			}
 
 			Util.logStatus(log)
 		}
+
+
+		console.log("# of handles active: " + this.multi.getCount());
 	
 		// we are done with this handle, remove it from the Multi instance and close it
 		this.multi.removeHandle(handle);

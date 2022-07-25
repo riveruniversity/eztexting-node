@@ -62,11 +62,15 @@ class Messages {
         this.multi.onMessage(this.onResponseHandler);
     }
     sendMessages(messages, callback) {
-        console.log("🚀 sendMessage");
-        this.messages = messages;
-        for (let i in messages) {
-            this.setCurlOptions(messages[i], +i);
-        }
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            console.log("🚀 sendMessage");
+            this.messages = messages;
+            for (let i in messages) {
+                this.setCurlOptions(messages[i], +i);
+                yield Util.sleep(300);
+            }
+            return true;
+        });
     }
     setCurlOptions(message, i) {
         const handle = new node_libcurl_1.Easy();

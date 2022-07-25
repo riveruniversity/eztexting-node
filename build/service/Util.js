@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logStatus = exports.getTimestamp = exports.getDateTime = exports.log = exports.color = void 0;
+exports.sleep = exports.logStatus = exports.getTimestamp = exports.getDateTime = exports.log = exports.color = void 0;
 const tslib_1 = require("tslib");
 // Save log
 const path_1 = tslib_1.__importDefault(require("path"));
@@ -44,10 +44,15 @@ function getTimestamp(stringTime) {
 exports.getTimestamp = getTimestamp;
 function logStatus(log) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
-        console.log("🗒️  logging!");
+        console.log("🗒️  logging " + log.location);
         const file = path_1.default.resolve(process.cwd(), 'logs', `${log.location}.log`);
         const msg = `${getDateTime()} | ${log.status}: ${log.phone} | ${log.message}\n`;
         fs.writeFileSync(file, msg, { flag: 'a+' }); //r w+
     });
 }
 exports.logStatus = logStatus;
+function sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+exports.sleep = sleep;
+;
