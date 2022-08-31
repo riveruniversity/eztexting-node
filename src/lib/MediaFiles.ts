@@ -50,7 +50,7 @@ export class MediaFiles implements MultiConf {
 	}
 
 
-	createMediaFiles(attendees: Attendee[] , params: MediaFileOptions): Promise<Attendee[]> {
+	createMediaFiles(attendees: Attendee[] , params: MediaFileOptions, timestamp: any): Promise<Attendee[]> {
 
 		console.log("🚀 createMediaFiles");
 
@@ -65,10 +65,9 @@ export class MediaFiles implements MultiConf {
 				const handleData: Buffer[] = this.handlesData[handleIndex];
 				const handlePhone: string | any = this.attendeesList[handleIndex].phone;
 			
-				console.log("☁️  media file: " + handleIndex);
+				console.log("☁️  media file: ", handleIndex);
 				//console.log(`🔗 handleUrl:`, handleUrl.data)
 
-				var fileId = 0;
 				var attendee = this.attendeesList[handleIndex];
 			
 				if (error) {
@@ -90,14 +89,14 @@ export class MediaFiles implements MultiConf {
 
 					console.log(handlePhone + " returned response code: ", responseCode);
 					console.log(`↩️ `, responseData)
-
-					
 		
 					if(responseCode == 201 || responseCode == 200) {
 						const json = JSON.parse(responseData);
 						const mediaFile: MediaFile = json.Response.Entry;
-						fileId = mediaFile.ID
 						var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: mediaFile.ID.toString()}
+
+						// Add to Attendees Array
+						this.attendeesChunk.push({...this.attendeesList[handleIndex], ...{file: mediaFile.ID}})
 					}
 					else {
 						console.log(attendee.barcode);
@@ -108,7 +107,6 @@ export class MediaFiles implements MultiConf {
 					Util.logStatus(log)
 				}
 
-				this.attendeesChunk.push({...this.attendeesList[handleIndex], ...{file: fileId}})
 
 				console.log("# of handles active: " + this.multi.getCount());
 			
@@ -143,7 +141,7 @@ export class MediaFiles implements MultiConf {
 					// wait 10 seconds for all requests to return
 					await Util.sleep(10000)
 
-					await this.createMessages(this.attendeesChunk, '') //! 2022-07-24 08:00
+					await this.createMessages(this.attendeesChunk, timestamp) //! SET TIMESTAMP IN masstext.ts
 					this.attendeesChunk = []
 				}
 			}
@@ -203,7 +201,7 @@ export class MediaFiles implements MultiConf {
 				const attendee = attendees[i]
 		
 				if(!attendee.fam) 
-					var message = `Good morning ${attendee.name}. When you arrive at the conference, show your fast pass at the registration.`
+					var message = `Good afternoon ${attendee.name}. When you arrive at the conference, show your fastpass at the registration.`
 				else
 					var message = `${attendee.name}'s fast pass`
 		
