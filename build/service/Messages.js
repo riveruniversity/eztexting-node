@@ -6,8 +6,6 @@ const tslib_1 = require("tslib");
 const util = tslib_1.__importStar(require("./Util"));
 const params = {};
 const setMessageParams = (message) => {
-    if (message.MessageTypeID)
-        setMessageTypeID(message);
     if (message.PhoneNumbers)
         setPhoneNumbers(message);
     if (message.Groups)
@@ -20,6 +18,7 @@ const setMessageParams = (message) => {
         setStampToSend(message);
     if (message.Message)
         setMessage(message);
+    setMessageTypeID(message);
     return params;
 };
 exports.setMessageParams = setMessageParams;
@@ -60,16 +59,16 @@ function setSubject(message) {
 function setFileID(message) {
     params.FileID = message.FileID;
 }
-function setMessageTypeID(message) {
-    if (!message.MessageTypeID)
-        message.MessageTypeID = '1';
-    params.MessageTypeID = message.MessageTypeID;
-}
 function setStampToSend(message) {
     params.StampToSend = util.getTimestamp(message.StampToSend);
 }
 function setMessage(message) {
     params.Message = message.Message;
+}
+function setMessageTypeID(message) {
+    if (!message.MessageTypeID)
+        message.MessageTypeID = '1';
+    params.MessageTypeID = message.MessageTypeID;
 }
 /*
 

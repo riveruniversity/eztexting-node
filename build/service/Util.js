@@ -36,9 +36,7 @@ function getTimestamp(stringTime) {
     if (!stringTime)
         return ''.toString();
     const dateTime = new Date(stringTime);
-    console.log('dateTime', dateTime);
     const timestamp = dateTime.getTime() / 1000;
-    console.log('timestamp', timestamp);
     return timestamp.toString();
 }
 exports.getTimestamp = getTimestamp;

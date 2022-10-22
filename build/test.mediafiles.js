@@ -1,9 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = require("tslib");
+const MediaFilesSingle_1 = require("./lib/MediaFilesSingle");
 const _1 = require(".");
-const _2 = require(".");
+const path_1 = tslib_1.__importDefault(require("path"));
 // >>> Create PNG and Save
-const qr = new _2.QRCodeGenerator();
+const qr = new _1.QRCodeGenerator();
 const style = {
     width: 320,
     height: 320,
@@ -80,11 +82,9 @@ qr.generate("png", 'testPic', style);
 qr.save("testPic", __dirname);
 // >>> Create new Media File from URL
 const format = 'json';
-const media = new _1.MediaFiles(format);
-/*
+const media = new MediaFilesSingle_1.MediaFiles(format);
 media
-    .createMediaFiles(__dirname + '\\testPic.png', true)
-    .then((value: any) => console.log(value.ID))
-    .catch(console.log)
-
-*/ 
+    //.createMediaFile(__dirname + '\\testPic.png', true)
+    .createMediaFile(path_1.default.resolve('testPic.png'), true)
+    .then((value) => console.log(value.ID))
+    .catch(console.log);
