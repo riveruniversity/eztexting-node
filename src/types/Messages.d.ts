@@ -6,8 +6,12 @@ export interface Message {
     Subject?: string;
     Message?: string;
     MessageTypeID?: '1' | '2' | '3';
-    FileID?: string | number;
+    FileID?: number;
 	StampToSend?: string;
+}
+
+export interface MessageWithFile extends Message {
+    FileID: number;
 }
 
 export interface PostData extends Message, EZLogin {}

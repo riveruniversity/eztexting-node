@@ -9,13 +9,13 @@ const params: Message = {}
 
 export const setMessageParams = (message: Message) => {
 
-    if(message.MessageTypeID) setMessageTypeID(message)
     if(message.PhoneNumbers) setPhoneNumbers(message)
     if(message.Groups) setGroups(message)
     if(message.Subject) setSubject(message)
     if(message.FileID) setFileID(message)
     if(message.StampToSend) setStampToSend(message)
     if(message.Message) setMessage(message)
+    setMessageTypeID(message)
 
     return params
 }
@@ -80,12 +80,6 @@ function setFileID (message: Message) {
 }
 
 
-function setMessageTypeID (message: Message) {
-    if(!message.MessageTypeID) message.MessageTypeID = '1'
-    params.MessageTypeID = message.MessageTypeID
-}
-
-
 function setStampToSend (message: Message) {
     params.StampToSend = util.getTimestamp(message.StampToSend)
 }
@@ -96,6 +90,10 @@ function setMessage (message: Message) {
 }
 
 
+function setMessageTypeID (message: Message) {
+    if(!message.MessageTypeID) message.MessageTypeID = '1'
+    params.MessageTypeID = message.MessageTypeID
+}
 
 
 

@@ -3,7 +3,7 @@
 
 🔀 Requests are being send async via the libcurl Multi and Easy handler. 
 
-🚧 Messages are being sent but request responses are currently only logged in the console. I'm working on adding a callback parameter.
+ ℹ️ Messages are being sent and request responses are logged. Callback functions can be passed on.
 
 ## Environment Dependencies
 Create a `.env` file in your root folder and add 3 variables `USR`, `PWD`, and `CRT_PATH`:
@@ -38,11 +38,13 @@ import { Message, ResponseFormat } from 'eztexting-node'
 
 const format: ResponseFormat = 'json';
 
-const singleMessage: Message[] = [
-	{PhoneNumbers: '2057404127', Message: 'Single message', StampToSend: '2022-06-10 16:15'}
-]
+const singleMessage: Message = {
+	PhoneNumbers: '2057404127', 
+	Message: 'Single message', 
+	StampToSend: '2022-10-10 16:15'
+};
 
-new Messages(format).sendMessage(singleMessage, 'callback')
+new Messages(format).sendMessage(singleMessage, callbackFn)
 ```
 
 
@@ -54,15 +56,17 @@ import { Message, ResponseFormat } from 'eztexting-node'
 
 const format: ResponseFormat = 'json';
 
-const bulkMessages: Message[] = [
-	{PhoneNumbers: ['2057404127', '205-740-4177'], Subject: "1", Message: "Bulk message"}
-];
+const bulkMessages: Message = { 
+	PhoneNumbers: ['2057404127', '205-740-4177'], 
+	Subject: "1", 
+	Message: "Bulk message"
+};
 
 new Messages(format).sendMessage(bulkMessages, 'callback')
 ```
 
 
-## Send individual messages to specific phone numbers
+## Send individual messages to specific phone numbers in bulk
 
 ```javascript
 import { Messages } from 'eztexting-node'
@@ -70,13 +74,18 @@ import { Message, ResponseFormat } from 'eztexting-node'
 
 const format: ResponseFormat = 'json';
 
+const Messages = new Messages(format)
+
 const individualMessages: Message[] = [
 	{PhoneNumbers: "2057404127", Subject: "1",Message: "Individual message 1"},
 	{PhoneNumbers: "205-740-4177", Subject: "2",Message: "Individual message 2"},
 	{PhoneNumbers: "(205) 740-4181", Subject: "3",Message: "Individual message 3"}
 ];
 
-new Messages(format).sendMessage(individualMessages, 'callback')
+individualMessages.forEach(async (message: Message, i: number) => {
+
+	messages.sendMessage(individualMessages, callback?)
+});
 ```
 
 
@@ -86,7 +95,7 @@ new Messages(format).sendMessage(individualMessages, 'callback')
 
 ```javascript
 
-import { Messages, QRCodeGenerator, OutputFormat, StyleOptions } from ".";
+import { QRCodeGenerator, OutputFormat, StyleOptions } from ".";
 
 const qr = new QRCodeGenerator();
 
@@ -115,8 +124,18 @@ qr.save("StyleWebsite");
 ### Send QR Code to Phone Number 
 
 ```javascript
+import { ResponseFormat } from 'eztexting-node'
+const format: ResponseFormat = 'json';
+const newMedia = new MediaFilesCreate(format);
 
-🚧 Working on it...
+const attendee: Attendee = {
+	PhoneNumber: '2057404127', 
+	Name: 'Winnie Puh',
+	Barcode: 123456789
+};
+
+const mediaFileOptions = {filetype: 'png', url: 'https://url-of-png-file.png'}
+newMedia.createMediaFile(attendee, mediaFileOptions, createMessageCallBackFn)
 ```
 
 

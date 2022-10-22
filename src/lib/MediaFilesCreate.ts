@@ -4,25 +4,26 @@ import { Curl, Easy, Multi, CurlCode } from "node-libcurl";
 // Services
 import * as EZService from "../service/EZTexting";
 import * as Util from '../service/Util'
-import { setMessageParams } from '../service/Messages';
 
 // Types
 import { EZLogin, MultiCurlConf, ResponseFormat} from "../types/EZTexting";
-import { Message, PostData } from "../types/Messages";
+import { MediaFile, MediaFileOptions } from "../types/MediaFiles";
 import { Log } from "../service/Util";
+import { Attendee } from "../rmi/Types";
+
 
 // Conf
 import { conf } from '../conf/curl'
 
 
-export class Messages implements MultiCurlConf {
+export class MediaFilesCreate implements MultiCurlConf {
 
 	baseUrl = conf.baseUrl
-	apiUrl = '/sending/messages?format='
+	apiUrl = '/sending/files?format='
 	format: ResponseFormat;
 	login: EZLogin;
 
-	messages: Message[] = [];
+	attendees: Attendee[] = [];
 
 	multi: Multi;
     handles: Easy [] = [];
@@ -31,6 +32,7 @@ export class Messages implements MultiCurlConf {
 
 	callbacks: Function[] = [];
 	callback: boolean = false;
+
 
 	constructor(format: ResponseFormat = 'json') {
 		EZService.initDotenv();
@@ -43,33 +45,34 @@ export class Messages implements MultiCurlConf {
 	//: _________________________________________
 
 
-	sendMessage (message: Message , callback: Function): void {
-		
-		const count = this.messages.push(message);
+	createMediaFile(attendee: Attendee , params: MediaFileOptions, callback?: Function): void {
 
+		const count = this.attendees.push(attendee);
 		if (callback) {
 			this.callback = true
 			this.callbacks.push(callback)
 		}
-
-		this.multi.onMessage(this.onResponseHandler);
 		
+		this.multi.onMessage(this.responseHandler);
+
+		let source = `${params.url + this.attendees[count-1].barcode}.${params.filetype}`
+
 		//* start the request
-		this.setCurlOptions(message, count-1)
+		this.setCurlOptions(source, count-1) 
 	}
 	//: -----------------------------------------
 
 
-	private onResponseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
+	private responseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
 		const responseCode = handle.getInfo("RESPONSE_CODE").data;
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
 		const handleIndex: number = this.handles.indexOf(handle);
 		const handleData: Buffer[] = this.handlesData[handleIndex];
-		const handlePhone: string | any = this.messages[handleIndex].PhoneNumbers;
+		const handlePhone: string | any = this.attendees[handleIndex].phone;
 	
-		console.log("🚀  sendMessage returned: ", responseCode);
+		console.log("🚀  createMediaFile returned: ", responseCode);
 		console.log("📞  Phone: ", handlePhone);
-		console.log("📨  message: ", handleIndex);
+		console.log("☁️  media file: ", handleIndex);
 		//_console.log(`🔗  handleUrl:`, handleUrl.data)
 		console.log("#️⃣  of handles active: ", this.multi.getCount());
 	
@@ -81,27 +84,33 @@ export class Messages implements MultiCurlConf {
 			const responseData: string = handleData.join().toString();
 			console.log(`↩️ `, responseData)
 
-
 			if(responseCode == 201 || responseCode == 200) {
-				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString()}
-			}
-			else if(responseCode == 502) 
-				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData}
-			else {
 				const json = JSON.parse(responseData);
-				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors}
+				const mediaFile: MediaFile = json.Response.Entry;
+				var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: mediaFile.ID.toString()}
+
+				// Add new File ID to Attendees Array
+				this.attendees[handleIndex].file = mediaFile.ID
 			}
+			else 
+				var log: Log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData}
+
 		} 
 		else {
-			console.log(handlePhone +	' returned error: "' +	error.message +	'" with errcode: ' + errorCode);
-			var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: error.message}
-		}
+			console.log(handlePhone, ' returned error: "',	error.message, '" with errorcode: ', errorCode);
+			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message}
+			
+			if (this.callback) {
+				const callback = this.callbacks[handleIndex]
+				callback(this.attendees[handleIndex], log)
+			}
+		}  
 
 		Util.logStatus(log)
 	
 		// >>> All finished
-		if (++this.finished === this.messages.length) {
-			console.log("🚁 all messages sent out!");
+		if (++this.finished === this.attendees.length) {
+			console.log("🚁 finished creating all media files!");
 
 			this.multi.close();
 		}
@@ -109,18 +118,18 @@ export class Messages implements MultiCurlConf {
 		//* return
 		if (this.callback) {
 			const callback = this.callbacks[handleIndex]
-			callback(this.messages[handleIndex])
+			callback(this.attendees[handleIndex])
 		}
 	}
 	//: -----------------------------------------
 
-
-	private setCurlOptions(message: Message, i: number) {
+	
+	private setCurlOptions(source: string, i: number) {
 
 		const handle = new Easy();
 		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + this.format + `&handle=${i}`);
 		handle.setOpt(Curl.option.POST, true);
-		handle.setOpt(Curl.option.POSTFIELDS, this.createPostData(message));
+		handle.setOpt(Curl.option.POSTFIELDS, this.createPostData(source));
 		handle.setOpt(Curl.option.CAINFO, EZService.getCertificate());
 		handle.setOpt(Curl.option.FOLLOWLOCATION, true);
 		handle.setOpt(Curl.option.WRITEFUNCTION, (data: Buffer, size: number, nmemb: number) => {
@@ -146,14 +155,11 @@ export class Messages implements MultiCurlConf {
 		return size * nmemb;
 	}
 	//: -----------------------------------------
+	
 
-
-	private createPostData(message: Message) {
+	private createPostData(source: string) {
 	
 		const postLogin: EZLogin = EZService.checkLoginInfo();
-		const postMessage: Message  = setMessageParams(message)
-		const postData: PostData | any = {...postLogin, ...postMessage}
-	
-		return new URLSearchParams(postData).toString()
+        return `User=${postLogin.User}&Password=${postLogin.Password}&Source=${source}`
 	}
 }

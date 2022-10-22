@@ -1,4 +1,4 @@
-/*
+
 // Dependencies
 import { Curl, Easy, Multi, CurlCode } from "node-libcurl";
 
@@ -9,7 +9,7 @@ import * as Util from '../service/Util'
 
 
 // Types
-import { EZLogin, MediaFilesConf, ResponseFormat } from "../types/EZTexting";
+import { EZLogin, ResponseFormat } from "../types/EZTexting";
 import { MediaFile, PostData } from "../types/MediaFiles";
 import { Log } from "../service/Util";
 
@@ -18,7 +18,7 @@ import { Log } from "../service/Util";
 import { conf } from '../conf/curl'
 
 
-export class MediaFiles implements MediaFilesConf {
+export class MediaFiles {
 
 	baseUrl = conf.baseUrl
 	apiUrl = '/sending/files?format='
@@ -134,4 +134,3 @@ export class MediaFiles implements MediaFilesConf {
 		return params
 	}
 }
-*/
