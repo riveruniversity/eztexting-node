@@ -2,7 +2,7 @@ export interface Attendee {
 	name: string;
 	phone: string;
 	barcode: string;
-	fam: boolean;
+	fam?: boolean;
 	file?: number;
 }
 

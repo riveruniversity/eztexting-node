@@ -1,6 +1,6 @@
 {
   "name": "eztexting-node",
-  "version": "0.0.5",
+  "version": "0.1.5",
   "description": "Send async single, bulk and bulk individual SMS and MMS node-libcurl using the EZTexting REST API.",
   "main": "./build/index.js",
   "scripts": {
@@ -43,7 +43,8 @@
     "fs-extra": "^10.1.0",
     "jsdom": "^19.0.0",
     "node-libcurl": "^2.3.4",
-    "qr-code-styling-node": "^1.5.0"
+    "qr-code-styling-node": "^1.5.0",
+    "rxjs": "^7.5.7"
   },
   "devDependencies": {
     "@types/node": "^17.0.36",

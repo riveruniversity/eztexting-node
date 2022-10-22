@@ -6,13 +6,15 @@ export { ResponseFormat }
 import { Messages } from './lib/Messages'
 export { Messages }
 
-import { Message } from './types/Messages'
-export { Message }
+import { Message, MessageWithFile } from './types/Messages'
+export { Message, MessageWithFile }
 
 
 // EZ Texting Endpoint MediaFiles
-import { MediaFiles } from './lib/MediaFiles'
-export { MediaFiles }
+import { MediaFilesCreate } from './lib/MediaFilesCreate'
+import { MediaFilesDelete } from './lib/MediaFilesDelete'
+export { MediaFilesCreate }
+export { MediaFilesDelete }
 
 import { MediaFile } from './types/MediaFiles'
 export { MediaFile }

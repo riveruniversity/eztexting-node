@@ -14,7 +14,7 @@ import * as Util from '../service/Util'
 
 
 // Types
-import { EZLogin, MultiConf, ResponseFormat} from "../types/EZTexting";
+import { EZLogin, MultiCurlConf, ResponseFormat} from "../types/EZTexting";
 import { MediaFile, MediaFileOptions } from "../types/MediaFiles";
 import { Log } from "../service/Util";
 import { Attendee, AttendeeWithFile } from "../rmi/Types";
@@ -24,7 +24,7 @@ import { Attendee, AttendeeWithFile } from "../rmi/Types";
 import { conf } from '../conf/curl'
 
 
-export class MediaFiles implements MultiConf {
+export class MediaFiles implements MultiCurlConf {
 
 	baseUrl = conf.baseUrl
 	apiUrl = '/sending/files?format='
@@ -79,12 +79,6 @@ export class MediaFiles implements MultiConf {
 		
 				} else {
 		
-					//r let responseData: string = '';
-					//r for (let i = 0; i < handleData.length; i++) {
-					//r 	responseData += handleData[i].toString();
-					//r }
-					//r const json = JSON.parse(responseData.substring(4)) // remove preceding 'null'
-		
 					const responseData: string = handleData.join().toString();
 
 					console.log(handlePhone + " returned response code: ", responseCode);
@@ -99,7 +93,7 @@ export class MediaFiles implements MultiConf {
 						this.attendeesChunk.push({...this.attendeesList[handleIndex], ...{file: mediaFile.ID}})
 					}
 					else {
-						console.log(attendee.barcode);
+						console.log(this.attendeesList[handleIndex].barcode);
 						
 						var log: Log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData}
 					}
