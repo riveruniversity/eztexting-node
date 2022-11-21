@@ -50,19 +50,28 @@ export function getTimestamp (stringTime: string | undefined) {
 
 export interface Log {
     location: string;
-    status: 'Error' | 'Success' | 'Curl Error' | 'Log';
+    status: 'Error' | 'Success' | 'Curl Error' | 'Log' | 'Failure';
     message: string;
     phone?: string;
     params?: object;
+    id?: any;
 }
 
 export async function logStatus(log: Log) {
 
-    console.log("🗒️  logging " + log.location);
+    try {
+        //_console.log("🗒️  logging " + log.location);
 
-    const file = path.resolve(process.cwd(), 'logs', `${log.location}.log`);
-	const msg = `${getDateTime()} | ${log.status}: ${log.phone} | ${log.message}\n`;
-	fs.writeFileSync(file, msg, {flag: 'a+'}); //r w+
+        
+
+        const msg = `${getDateTime()} | ${log.status}: ${log.id ? log.id : ''} | ${log.phone ? log.phone + ' | ' : ''}${log.message} \n`;
+
+        const file = path.resolve(process.cwd(), 'logs', `${log.location}.log`);
+        fs.writeFileSync(file, msg, {flag: 'a+'}); //r w+
+    }
+    catch(error) {
+        console.error(error)
+    }
 }
 
 

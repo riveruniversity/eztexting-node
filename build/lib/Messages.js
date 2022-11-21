@@ -15,63 +15,71 @@ class Messages {
         this.baseUrl = curl_1.conf.baseUrl;
         this.apiUrl = '/sending/messages?format=';
         this.messages = [];
+        this.attendees = [];
         this.handles = [];
         this.handlesData = [];
         this.finished = 0;
         this.callbacks = [];
         this.callback = false;
         //: -----------------------------------------
-        this.onResponseHandler = (error, handle, errorCode) => {
+        this.onResponseHandler = (error, handle, errorCode) => tslib_1.__awaiter(this, void 0, void 0, function* () {
             const responseCode = handle.getInfo("RESPONSE_CODE").data;
             const handleUrl = handle.getInfo("EFFECTIVE_URL");
             const handleIndex = this.handles.indexOf(handle);
             const handleData = this.handlesData[handleIndex];
             const handlePhone = this.messages[handleIndex].PhoneNumbers;
-            console.log("🚀  sendMessage returned: ", responseCode);
-            console.log("📞  Phone: ", handlePhone);
-            console.log("📨  message: ", handleIndex);
+            console.log("🛬", handleIndex, "sendMessage returned: ", responseCode);
+            //i console.log("📞  Phone: ", handlePhone);
+            //i console.log("📨  message: ", handleIndex);
             //_console.log(`🔗  handleUrl:`, handleUrl.data)
-            console.log("#️⃣  of handles active: ", this.multi.getCount());
+            console.log("#️⃣  active handles: ", this.multi.getCount());
             // remove completed from the Multi instance and close it
             this.multi.removeHandle(handle);
             handle.close();
             if (!error) {
                 const responseData = handleData.join().toString();
-                console.log(`↩️ `, responseData);
                 if (responseCode == 201 || responseCode == 200) {
-                    var log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString() };
+                    var log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString(), id: this.attendees[handleIndex].barcode };
                 }
-                else if (responseCode == 502)
-                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData };
+                else if (responseCode == 502) {
+                    console.log(`↩️ `, responseData);
+                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.attendees[handleIndex].barcode };
+                }
                 else {
+                    console.log(`↩️ `, responseData);
                     const json = JSON.parse(responseData);
-                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors };
+                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors, id: this.attendees[handleIndex].barcode };
                 }
             }
             else {
                 console.log(handlePhone + ' returned error: "' + error.message + '" with errcode: ' + errorCode);
-                var log = { status: 'Error', location: 'messages', phone: handlePhone, message: error.message };
+                var log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.attendees[handleIndex].barcode };
             }
             Util.logStatus(log);
-            // >>> All finished
-            if (++this.finished === this.messages.length) {
-                console.log("🚁 all messages sent out!");
-                this.multi.close();
-            }
             //* return
             if (this.callback) {
+                const isError = log.status != 'Success' ? log : false;
                 const callback = this.callbacks[handleIndex];
-                callback(this.messages[handleIndex]);
+                callback(this.messages[handleIndex], isError);
             }
-        };
+            // Wait for more requests before closing 
+            yield Util.sleep(10000);
+            // >>> All finished
+            if (++this.finished === this.messages.length) {
+                console.log("🚁 finished sending all messages!");
+                this.multi.close();
+            }
+        });
         EZService.initDotenv();
         this.login = EZService.checkLoginInfo();
         this.format = format;
         this.multi = new node_libcurl_1.Multi();
     }
     //: _________________________________________
-    sendMessage(message, callback) {
+    sendMessage(message, attendee, callback) {
         const count = this.messages.push(message);
+        this.attendees.push(attendee);
+        console.log("🚀", count - 1, "sendMessage ", attendee.barcode);
         if (callback) {
             this.callback = true;
             this.callbacks.push(callback);

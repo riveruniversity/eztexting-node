@@ -13,10 +13,11 @@ export declare function getDateTime(): string;
 export declare function getTimestamp(stringTime: string | undefined): string;
 export interface Log {
     location: string;
-    status: 'Error' | 'Success' | 'Curl Error' | 'Log';
+    status: 'Error' | 'Success' | 'Curl Error' | 'Log' | 'Failure';
     message: string;
     phone?: string;
     params?: object;
+    id?: any;
 }
 export declare function logStatus(log: Log): Promise<void>;
 export declare function sleep(milliseconds: number): Promise<unknown>;

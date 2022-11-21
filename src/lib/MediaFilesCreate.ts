@@ -19,7 +19,7 @@ import { conf } from '../conf/curl'
 export class MediaFilesCreate implements MultiCurlConf {
 
 	baseUrl = conf.baseUrl
-	apiUrl = '/sending/files?format='
+	apiUrl = '/sending/files'
 	format: ResponseFormat;
 	login: EZLogin;
 
@@ -48,6 +48,8 @@ export class MediaFilesCreate implements MultiCurlConf {
 	createMediaFile(attendee: Attendee , params: MediaFileOptions, callback?: Function): void {
 
 		const count = this.attendees.push(attendee);
+		console.log("🚀", count -1, "createMediaFile " , attendee.barcode);
+
 		if (callback) {
 			this.callback = true
 			this.callbacks.push(callback)
@@ -63,18 +65,18 @@ export class MediaFilesCreate implements MultiCurlConf {
 	//: -----------------------------------------
 
 
-	private responseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
+	private responseHandler = async (error: Error, handle: Easy, errorCode: CurlCode) => {
 		const responseCode = handle.getInfo("RESPONSE_CODE").data;
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
 		const handleIndex: number = this.handles.indexOf(handle);
 		const handleData: Buffer[] = this.handlesData[handleIndex];
 		const handlePhone: string | any = this.attendees[handleIndex].phone;
 	
-		console.log("🚀  createMediaFile returned: ", responseCode);
-		console.log("📞  Phone: ", handlePhone);
-		console.log("☁️  media file: ", handleIndex);
+		console.log("🛬", handleIndex, "createMediaFile returned: ", responseCode);
+		//i console.log("📞  Phone: ", handlePhone);
+		//i console.log("☁️  media file: ", handleIndex);
 		//_console.log(`🔗  handleUrl:`, handleUrl.data)
-		console.log("#️⃣  of handles active: ", this.multi.getCount());
+		console.log("#️⃣  active handles: ", this.multi.getCount());
 	
 		// remove completed from the Multi instance and close it
 		this.multi.removeHandle(handle);
@@ -82,43 +84,44 @@ export class MediaFilesCreate implements MultiCurlConf {
 	
 		if (!error) {
 			const responseData: string = handleData.join().toString();
-			console.log(`↩️ `, responseData)
 
 			if(responseCode == 201 || responseCode == 200) {
 				const json = JSON.parse(responseData);
 				const mediaFile: MediaFile = json.Response.Entry;
-				var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: mediaFile.ID.toString()}
+				var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + mediaFile.ID.toString(), id: this.attendees[handleIndex].barcode}
 
 				// Add new File ID to Attendees Array
 				this.attendees[handleIndex].file = mediaFile.ID
 			}
-			else 
-				var log: Log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData}
+			else {
+				console.log(`↩️ `, responseData)
+				var log: Log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData, id: this.attendees[handleIndex].barcode}
+			}
+				
 
 		} 
 		else {
 			console.log(handlePhone, ' returned error: "',	error.message, '" with errorcode: ', errorCode);
-			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message}
-			
-			if (this.callback) {
-				const callback = this.callbacks[handleIndex]
-				callback(this.attendees[handleIndex], log)
-			}
+			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.attendees[handleIndex].barcode}
 		}  
-
 		Util.logStatus(log)
+
+
+		//* return
+		if (this.callback) {
+			const isError = log.status != 'Success' ? log : false;
+			const callback = this.callbacks[handleIndex]
+			callback(this.attendees[handleIndex], isError)
+		}
+
+		// Wait for more requests before closing 
+		await Util.sleep(10000)
 	
 		// >>> All finished
 		if (++this.finished === this.attendees.length) {
 			console.log("🚁 finished creating all media files!");
 
 			this.multi.close();
-		}
-
-		//* return
-		if (this.callback) {
-			const callback = this.callbacks[handleIndex]
-			callback(this.attendees[handleIndex])
 		}
 	}
 	//: -----------------------------------------
@@ -127,7 +130,7 @@ export class MediaFilesCreate implements MultiCurlConf {
 	private setCurlOptions(source: string, i: number) {
 
 		const handle = new Easy();
-		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + this.format + `&handle=${i}`);
+		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + '?format=' + this.format + `&handle=${i}`);
 		handle.setOpt(Curl.option.POST, true);
 		handle.setOpt(Curl.option.POSTFIELDS, this.createPostData(source));
 		handle.setOpt(Curl.option.CAINFO, EZService.getCertificate());

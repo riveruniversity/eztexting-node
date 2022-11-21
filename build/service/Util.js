@@ -42,10 +42,15 @@ function getTimestamp(stringTime) {
 exports.getTimestamp = getTimestamp;
 function logStatus(log) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
-        console.log("🗒️  logging " + log.location);
-        const file = path_1.default.resolve(process.cwd(), 'logs', `${log.location}.log`);
-        const msg = `${getDateTime()} | ${log.status}: ${log.phone} | ${log.message}\n`;
-        fs.writeFileSync(file, msg, { flag: 'a+' }); //r w+
+        try {
+            //_console.log("🗒️  logging " + log.location);
+            const msg = `${getDateTime()} | ${log.status}: ${log.id ? log.id : ''} | ${log.phone ? log.phone + ' | ' : ''}${log.message} \n`;
+            const file = path_1.default.resolve(process.cwd(), 'logs', `${log.location}.log`);
+            fs.writeFileSync(file, msg, { flag: 'a+' }); //r w+
+        }
+        catch (error) {
+            console.error(error);
+        }
     });
 }
 exports.logStatus = logStatus;

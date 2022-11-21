@@ -13,6 +13,7 @@ import { Log } from "../service/Util";
 
 // Conf
 import { conf } from '../conf/curl'
+import { Attendee } from "../rmi/Types";
 
 
 export class Messages implements MultiCurlConf {
@@ -23,6 +24,7 @@ export class Messages implements MultiCurlConf {
 	login: EZLogin;
 
 	messages: Message[] = [];
+	attendees: Attendee[] = [];
 
 	multi: Multi;
     handles: Easy [] = [];
@@ -43,9 +45,13 @@ export class Messages implements MultiCurlConf {
 	//: _________________________________________
 
 
-	sendMessage (message: Message , callback: Function): void {
+	sendMessage (message: Message, attendee: Attendee, callback: Function): void {
 		
 		const count = this.messages.push(message);
+		this.attendees.push(attendee);
+		
+		console.log("🚀", count -1, "sendMessage ", attendee.barcode);
+
 
 		if (callback) {
 			this.callback = true
@@ -60,18 +66,18 @@ export class Messages implements MultiCurlConf {
 	//: -----------------------------------------
 
 
-	private onResponseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
+	private onResponseHandler = async (error: Error, handle: Easy, errorCode: CurlCode) => {
 		const responseCode = handle.getInfo("RESPONSE_CODE").data;
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
 		const handleIndex: number = this.handles.indexOf(handle);
 		const handleData: Buffer[] = this.handlesData[handleIndex];
 		const handlePhone: string | any = this.messages[handleIndex].PhoneNumbers;
 	
-		console.log("🚀  sendMessage returned: ", responseCode);
-		console.log("📞  Phone: ", handlePhone);
-		console.log("📨  message: ", handleIndex);
+		console.log("🛬", handleIndex, "sendMessage returned: ", responseCode);
+		//i console.log("📞  Phone: ", handlePhone);
+		//i console.log("📨  message: ", handleIndex);
 		//_console.log(`🔗  handleUrl:`, handleUrl.data)
-		console.log("#️⃣  of handles active: ", this.multi.getCount());
+		console.log("#️⃣  active handles: ", this.multi.getCount());
 	
 		// remove completed from the Multi instance and close it
 		this.multi.removeHandle(handle);
@@ -79,37 +85,42 @@ export class Messages implements MultiCurlConf {
 	
 		if (!error) {
 			const responseData: string = handleData.join().toString();
-			console.log(`↩️ `, responseData)
-
 
 			if(responseCode == 201 || responseCode == 200) {
-				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString()}
+				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString(), id: this.attendees[handleIndex].barcode}
 			}
-			else if(responseCode == 502) 
-				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData}
+			else if(responseCode == 502) {
+				console.log(`↩️ `, responseData)
+				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.attendees[handleIndex].barcode}
+			}
 			else {
+				console.log(`↩️ `, responseData)
 				const json = JSON.parse(responseData);
-				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors}
+				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors, id: this.attendees[handleIndex].barcode}
 			}
 		} 
 		else {
 			console.log(handlePhone +	' returned error: "' +	error.message +	'" with errcode: ' + errorCode);
-			var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: error.message}
+			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.attendees[handleIndex].barcode}
 		}
-
 		Util.logStatus(log)
 	
-		// >>> All finished
-		if (++this.finished === this.messages.length) {
-			console.log("🚁 all messages sent out!");
-
-			this.multi.close();
-		}
 
 		//* return
 		if (this.callback) {
+			const isError = log.status != 'Success' ? log : false;
 			const callback = this.callbacks[handleIndex]
-			callback(this.messages[handleIndex])
+			callback(this.messages[handleIndex], isError)
+		}
+
+		// Wait for more requests before closing 
+		await Util.sleep(10000)
+		
+		// >>> All finished
+		if (++this.finished === this.messages.length) {
+			console.log("🚁 finished sending all messages!");
+
+			this.multi.close();
 		}
 	}
 	//: -----------------------------------------

@@ -1,5 +1,6 @@
 export interface Attendee {
-	name: string;
+	first: string;
+	last: string;
 	phone: string;
 	barcode: string;
 	fam?: boolean;

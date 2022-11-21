@@ -14,3 +14,5 @@ import { QRCodeGenerator } from './service/QRCode';
 export { QRCodeGenerator };
 import { OutputFormat, StyleOptions } from './types/QRCode';
 export { OutputFormat, StyleOptions };
+import * as Util from "./service/Util";
+export { Util };

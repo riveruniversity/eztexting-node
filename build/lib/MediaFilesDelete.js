@@ -21,45 +21,48 @@ class MediaFilesDelete {
         this.callbacks = [];
         this.callback = false;
         //: -----------------------------------------
-        this.responseHandler = (error, handle, errorCode) => {
+        this.responseHandler = (error, handle, errorCode) => tslib_1.__awaiter(this, void 0, void 0, function* () {
             const responseCode = handle.getInfo("RESPONSE_CODE").data;
             const handleUrl = handle.getInfo("EFFECTIVE_URL");
             const handleIndex = this.handles.indexOf(handle);
             const handleData = this.handlesData[handleIndex];
             const handlePhone = this.messages[handleIndex].PhoneNumbers;
-            console.log("🚀  deleteMediaFile returned: ", responseCode);
-            console.log("📞  Phone: ", handlePhone);
-            console.log("🗑️  media file: ", handleIndex);
+            console.log("🛬", handleIndex, "deleteMediaFile returned: ", responseCode);
+            //i console.log("📞  Phone: ", handlePhone);
+            //i console.log("🗑️  media file: ", handleIndex);
             //_console.log(`🔗 handleUrl:`, handleUrl.data)
-            console.log("#️⃣  of handles active: ", this.multi.getCount());
+            console.log("#️⃣  active handles: ", this.multi.getCount());
             // remove completed from the Multi instance and close it
             this.multi.removeHandle(handle);
             handle.close();
             if (!error) {
                 const responseData = handleData.join().toString();
-                console.log(`↩️ `, responseData);
-                if (responseCode == 204) {
+                if (responseCode == 204)
                     var log = { status: 'Success', location: 'delete_media', phone: handlePhone, message: 'Deleted' };
-                }
-                else
+                else {
+                    console.log(`↩️ `, responseData);
                     var log = { status: 'Error', location: 'delete_media', phone: handlePhone, message: responseCode + ' ' + responseData };
+                }
             }
             else {
                 console.log(handlePhone + ' returned error: "' + error.message + '" with errorcode: ' + errorCode);
                 var log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message };
             }
             Util.logStatus(log);
+            //* return
+            if (this.callback) {
+                const isError = log.status != 'Success' ? log : false;
+                const callback = this.callbacks[handleIndex];
+                callback(this.messages[handleIndex], isError);
+            }
+            // Wait for more requests before closing 
+            yield Util.sleep(10000);
             // >>> All finished
             if (++this.finished === this.messages.length) {
                 console.log("🚁 finished deleting all media files!");
                 this.multi.close();
             }
-            //* return
-            if (this.callback) {
-                const callback = this.callbacks[handleIndex];
-                callback(this.messages[handleIndex]);
-            }
-        };
+        });
         EZService.initDotenv();
         this.login = EZService.checkLoginInfo();
         this.format = format;
@@ -68,6 +71,7 @@ class MediaFilesDelete {
     //: _________________________________________
     deleteMediaFile(message, callback) {
         let count = this.messages.push(message);
+        console.log("🚀", count - 1, "deleteMediaFile ", message.PhoneNumbers);
         if (callback) {
             this.callback = true;
             this.callbacks.push(callback);

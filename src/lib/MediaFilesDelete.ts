@@ -46,6 +46,7 @@ export class MediaFilesDelete implements MultiCurlConf {
 	deleteMediaFile(message: MessageWithFile, callback?: Function): void {
 		
 		let count = this.messages.push(message);
+		console.log("🚀", count -1, "deleteMediaFile ", message.PhoneNumbers);
 
 		if (callback) {
 			this.callback = true
@@ -58,18 +59,18 @@ export class MediaFilesDelete implements MultiCurlConf {
 	//: -----------------------------------------
 
 
-	private responseHandler = (error: Error, handle: Easy, errorCode: CurlCode) => {
+	private responseHandler = async (error: Error, handle: Easy, errorCode: CurlCode) => {
 		const responseCode = handle.getInfo("RESPONSE_CODE").data;
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
 		const handleIndex: number = this.handles.indexOf(handle);
 		const handleData: Buffer[] = this.handlesData[handleIndex];
 		const handlePhone: string | any = this.messages[handleIndex].PhoneNumbers;
 	
-		console.log("🚀  deleteMediaFile returned: ", responseCode);
-		console.log("📞  Phone: ", handlePhone);
-		console.log("🗑️  media file: ", handleIndex);
+		console.log("🛬", handleIndex, "deleteMediaFile returned: ", responseCode);
+		//i console.log("📞  Phone: ", handlePhone);
+		//i console.log("🗑️  media file: ", handleIndex);
 		//_console.log(`🔗 handleUrl:`, handleUrl.data)
-		console.log("#️⃣  of handles active: ", this.multi.getCount());
+		console.log("#️⃣  active handles: ", this.multi.getCount());
 
 		// remove completed from the Multi instance and close it
 		this.multi.removeHandle(handle);
@@ -77,33 +78,38 @@ export class MediaFilesDelete implements MultiCurlConf {
 	
 		if (!error) {
 			const responseData: string = handleData.join().toString();
-			console.log(`↩️ `, responseData)
 
-			if(responseCode == 204) {
+			if(responseCode == 204)
 				var log: Log = { status: 'Success', location: 'delete_media', phone: handlePhone, message: 'Deleted'}
-			}
-			else
+			else {
+				console.log(`↩️ `, responseData)
 				var log: Log = { status: 'Error', location: 'delete_media', phone: handlePhone, message: responseCode + ' ' + responseData}
+			}
+				
 
 		}
 		else {
 			console.log(handlePhone + ' returned error: "' +	error.message +	'" with errorcode: ' + errorCode);
 			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message}
 		}
-
 		Util.logStatus(log)
+		
+
+		//* return
+		if (this.callback) {
+			const isError = log.status != 'Success' ? log : false;
+			const callback = this.callbacks[handleIndex]
+			callback(this.messages[handleIndex], isError)
+		}
+
+		// Wait for more requests before closing 
+		await Util.sleep(10000)
 	
 		// >>> All finished
 		if (++this.finished === this.messages.length) {
 			console.log("🚁 finished deleting all media files!");
 
 			this.multi.close();
-		}
-
-		//* return
-		if (this.callback) {
-			const callback = this.callbacks[handleIndex]
-			callback(this.messages[handleIndex])
 		}
 	}
 	//: -----------------------------------------
