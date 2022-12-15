@@ -12,7 +12,7 @@ import { attendees } from './attendees';
 
 const timestamp = ''; //! SET TIMESTAMP 2022-11-20 15:00
 //r const qrUrl = `https://rmi-texting.onrender.com`
-const qrUrl = `https://rmi-texting.herokuapp.com`
+const qrUrl = `https://rmi-texting.rmiwebservices.com`
 //_const qrUrl = `http://localhost:1996`
 
 
@@ -28,7 +28,7 @@ sendBulkMessages();
 
 async function sendBulkMessages() {
 	//_loadPicture()
-	await createBarcodes(attendees);
+	 await createBarcodes(attendees);
 	//await Util.sleep(3000)
 
 	for(let attendee of attendees) {
@@ -95,8 +95,8 @@ async function createBarcodes(attendees: Attendee[], error?: Error) {
 			.then((res: { status: any; config: any }) => {
 
 				let data = JSON.parse(res.config.data)
-				let percent = +(data.index/attendees.length).toFixed(2) * 100
-				console.log('🎫', `${data.index} (${percent}%)` ,'createBarcodes', res.status);
+				let percent = +((data.index+1)/attendees.length).toFixed(2) * 100
+				console.log('🎫', `${data.index+1} (${percent}%)` ,'createBarcodes', res.status);
 				
 				//loadPicture(res.config.url)
 				//newMedia.createMediaFile(attendees[data.index], {filetype: 'png', url: qrUrl + '/qr/show/'}, createMessage)
