@@ -7,10 +7,10 @@ import { certificate } from "../conf/cert";
 
 export function checkLoginInfo() {
 	
-	if (!process.env.USR || !process.env.PWD)
+	if (!process.env.USR || !process.env.PASS)
 		throw new Error("Missing parameter: 'Username' or 'Password'! Please add environment variables.");
 
-	return { User: process.env.USR, Password: process.env.PWD };
+	return { User: process.env.USR, Password: process.env.PASS };
 }
 
 
