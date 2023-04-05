@@ -10,9 +10,9 @@ import { Attendee, AttendeeWithFile } from './Types'
 import { attendees } from './attendees';
 
 
-const timestamp = ''; //! SET TIMESTAMP 2022-11-20 15:00
-//r const qrUrl = `https://rmi-texting.onrender.com`
+const timestamp = '2023-01-22 7:00'; //! SET TIMESTAMP 2022-11-20 15:00
 const qrUrl = `https://rmi-texting.rmiwebservices.com`
+//r const qrUrl = `https://rmi-texting.onrender.com`
 //_const qrUrl = `http://localhost:1996`
 
 
@@ -27,7 +27,7 @@ const messages = new Messages(format)
 sendBulkMessages();
 
 async function sendBulkMessages() {
-	//_loadPicture()
+
 	 await createBarcodes(attendees);
 	//await Util.sleep(3000)
 
@@ -50,12 +50,13 @@ async function createMessage(attendee: AttendeeWithFile, error?: Error) {
 	if (error) return;
 
 	if(!attendee.fam) 
-		var text = `Good morning ${attendee.first}. When you arrive at the conference, show your fast pass at the registration.`
+		var text = `Good morning ${attendee.first}. Present your fast pass along with your goverment-issued ID at the check-in.`
 	else
-		var text = `${attendee.first}'s fast pass`
+		var text = ''
+		// var text = `${attendee.first}'s fast pass`
 
-	//const message: MessageWithFile = {PhoneNumbers: attendee.phone, StampToSend: timestamp, MessageTypeID: '3', Message: text, FileID: attendee.file};
-	const message: MessageWithFile = {PhoneNumbers: attendee.phone, StampToSend: timestamp, MessageTypeID: '3', FileID: attendee.file};
+	const message: MessageWithFile = {PhoneNumbers: attendee.phone, StampToSend: timestamp, MessageTypeID: '3', Message: text, FileID: attendee.file};
+	// const message: MessageWithFile = {PhoneNumbers: attendee.phone, StampToSend: timestamp, MessageTypeID: '3', FileID: attendee.file};
 
 	messages.sendMessage(message, attendee, deleteMediaFile)
 }
@@ -64,7 +65,7 @@ async function createMessage(attendee: AttendeeWithFile, error?: Error) {
 
 async function deleteMediaFile(message: MessageWithFile, error?: Error) {
 
-	console.log('📨  Message: ', message.PhoneNumbers)
+	// console.log('📨  Message: ', message.PhoneNumbers)
 
 	delMedia.deleteMediaFile(message, done)
 }
@@ -101,7 +102,6 @@ async function createBarcodes(attendees: Attendee[], error?: Error) {
 					let percent = +((index + 1)/attendees.length).toFixed(2) * 100
 					console.log('🎫', `${index + 1} (${percent}%)` ,'createBarcodes', res.status);
 					
-					//loadPicture(res.config.url)
 					//newMedia.createMediaFile(attendees[data.index], {filetype: 'png', url: qrUrl + '/qr/show/'}, createMessage)
 				})
 				.catch((error: any) => {
@@ -115,22 +115,5 @@ async function createBarcodes(attendees: Attendee[], error?: Error) {
 		resolve()
 	})
 }
-
-
-
-async function loadPicture() {
-
-
-	for(let attendee of attendees) {
-
-		await axios.get(qrUrl + `/qr/show/${attendee.barcode}.png`)
-		.catch((error: any) => {
-			
-			console.error('showUrl', error.code, error.config.url);
-			Util.logStatus({ status: 'Error', location: 'load_picture', message: error.code + ' | ' + error.message + ' | ' + error.config.url, phone: error.status})
-		});
-	}
-}
-
 
 	

@@ -7,9 +7,9 @@ const dotenv_1 = tslib_1.__importDefault(require("dotenv"));
 // Modules
 const cert_1 = require("../conf/cert");
 function checkLoginInfo() {
-    if (!process.env.USR || !process.env.PWD)
+    if (!process.env.USR || !process.env.PASS)
         throw new Error("Missing parameter: 'Username' or 'Password'! Please add environment variables.");
-    return { User: process.env.USR, Password: process.env.PWD };
+    return { User: process.env.USR, Password: process.env.PASS };
 }
 exports.checkLoginInfo = checkLoginInfo;
 function getCertificate() {
