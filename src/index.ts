@@ -9,6 +9,9 @@ export { Messages }
 import { Message, MessageWithFile } from './types/Messages'
 export { Message, MessageWithFile }
 
+import { Contact } from './types/Contacts'
+export { Contact }
+
 
 // EZ Texting Endpoint MediaFiles
 import { MediaFilesCreate } from './lib/MediaFilesCreate'
