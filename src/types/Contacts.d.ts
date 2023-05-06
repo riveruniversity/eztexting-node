@@ -1,4 +1,4 @@
-export interface Attendee {
+export interface Contact {
 	first: string;
 	last: string;
 	phone: string;
@@ -7,6 +7,6 @@ export interface Attendee {
 	file?: number;
 }
 
-export interface AttendeeWithFile extends Attendee {
+export interface ContactWithFile extends Contact {
 	file: number;
 }

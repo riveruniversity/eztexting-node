@@ -9,7 +9,7 @@ import * as Util from '../service/Util'
 import { EZLogin, MultiCurlConf, ResponseFormat} from "../types/EZTexting";
 import { MediaFile, MediaFileOptions } from "../types/MediaFiles";
 import { Log } from "../service/Util";
-import { Attendee } from "../rmi/Types";
+import { Contact } from "../types/Contacts"
 
 
 // Conf
@@ -23,7 +23,7 @@ export class MediaFilesCreate implements MultiCurlConf {
 	format: ResponseFormat;
 	login: EZLogin;
 
-	attendees: Attendee[] = [];
+	contacts: Contact[] = [];
 
 	multi: Multi;
     handles: Easy [] = [];
@@ -45,9 +45,9 @@ export class MediaFilesCreate implements MultiCurlConf {
 	//: _________________________________________
 
 
-	createMediaFile(attendee: Attendee , params: MediaFileOptions, callback?: Function): void {
+	createMediaFile(attendee: Contact , params: MediaFileOptions, callback?: Function): void {
 
-		const count = this.attendees.push(attendee);
+		const count = this.contacts.push(attendee);
 		console.log("🚀", count -1, "createMediaFile " , attendee.barcode);
 
 		if (callback) {
@@ -57,7 +57,7 @@ export class MediaFilesCreate implements MultiCurlConf {
 		
 		this.multi.onMessage(this.responseHandler);
 
-		let source = `${params.url + this.attendees[count-1].barcode}.${params.filetype}`
+		let source = `${params.url + this.contacts[count-1].barcode}.${params.filetype}`
 
 		//* start the request
 		this.setCurlOptions(source, count-1) 
@@ -70,13 +70,13 @@ export class MediaFilesCreate implements MultiCurlConf {
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
 		const handleIndex: number = this.handles.indexOf(handle);
 		const handleData: Buffer[] = this.handlesData[handleIndex];
-		const handlePhone: string | any = this.attendees[handleIndex].phone;
+		const handlePhone: string | any = this.contacts[handleIndex].phone;
 	
 		console.log("🛬", handleIndex, "createMediaFile returned: ", responseCode);
 		//i console.log("📞  Phone: ", handlePhone);
 		//i console.log("☁️  media file: ", handleIndex);
 		//_console.log(`🔗  handleUrl:`, handleUrl.data)
-		console.log("#️⃣  active handles: ", this.multi.getCount());
+		console.log("💠  active create handles: ", this.multi.getCount());
 	
 		// remove completed from the Multi instance and close it
 		this.multi.removeHandle(handle);
@@ -88,21 +88,21 @@ export class MediaFilesCreate implements MultiCurlConf {
 			if(responseCode == 201 || responseCode == 200) {
 				const json = JSON.parse(responseData);
 				const mediaFile: MediaFile = json.Response.Entry;
-				var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + mediaFile.ID.toString(), id: this.attendees[handleIndex].barcode}
+				var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + mediaFile.ID.toString(), id: this.contacts[handleIndex].barcode}
 
 				// Add new File ID to Attendees Array
-				this.attendees[handleIndex].file = mediaFile.ID
+				this.contacts[handleIndex].file = mediaFile.ID
 			}
 			else {
 				console.log(`↩️ `, responseData)
-				var log: Log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData, id: this.attendees[handleIndex].barcode}
+				var log: Log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode}
 			}
 				
 
 		} 
 		else {
 			console.log(handlePhone, ' returned error: "',	error.message, '" with errorcode: ', errorCode);
-			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.attendees[handleIndex].barcode}
+			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.contacts[handleIndex].barcode}
 		}  
 		Util.logStatus(log)
 
@@ -111,14 +111,14 @@ export class MediaFilesCreate implements MultiCurlConf {
 		if (this.callback) {
 			const isError = log.status != 'Success' ? log : false;
 			const callback = this.callbacks[handleIndex]
-			callback(this.attendees[handleIndex], isError)
+			callback(this.contacts[handleIndex], isError)
 		}
 
 		// Wait for more requests before closing 
 		await Util.sleep(10000)
 	
 		// >>> All finished
-		if (++this.finished === this.attendees.length) {
+		if (++this.finished === this.contacts.length) {
 			console.log("🚁 finished creating all media files!");
 
 			this.multi.close();

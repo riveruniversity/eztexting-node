@@ -15,7 +15,7 @@ class Messages {
         this.baseUrl = curl_1.conf.baseUrl;
         this.apiUrl = '/sending/messages?format=';
         this.messages = [];
-        this.attendees = [];
+        this.contacts = [];
         this.handles = [];
         this.handlesData = [];
         this.finished = 0;
@@ -32,28 +32,28 @@ class Messages {
             //i console.log("📞  Phone: ", handlePhone);
             //i console.log("📨  message: ", handleIndex);
             //_console.log(`🔗  handleUrl:`, handleUrl.data)
-            console.log("#️⃣  active handles: ", this.multi.getCount());
+            console.log("💠  active message handles: ", this.multi.getCount());
             // remove completed from the Multi instance and close it
             this.multi.removeHandle(handle);
             handle.close();
             if (!error) {
                 const responseData = handleData.join().toString();
                 if (responseCode == 201 || responseCode == 200) {
-                    var log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString(), id: this.attendees[handleIndex].barcode };
+                    var log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString(), id: this.contacts[handleIndex].barcode };
                 }
                 else if (responseCode == 502) {
                     console.log(`↩️ `, responseData);
-                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.attendees[handleIndex].barcode };
+                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode };
                 }
                 else {
                     console.log(`↩️ `, responseData);
                     const json = JSON.parse(responseData);
-                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors, id: this.attendees[handleIndex].barcode };
+                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors, id: this.contacts[handleIndex].barcode };
                 }
             }
             else {
                 console.log(handlePhone + ' returned error: "' + error.message + '" with errcode: ' + errorCode);
-                var log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.attendees[handleIndex].barcode };
+                var log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.contacts[handleIndex].barcode };
             }
             Util.logStatus(log);
             //* return
@@ -78,7 +78,7 @@ class Messages {
     //: _________________________________________
     sendMessage(message, attendee, callback) {
         const count = this.messages.push(message);
-        this.attendees.push(attendee);
+        this.contacts.push(attendee);
         console.log("🚀", count - 1, "sendMessage ", attendee.barcode);
         if (callback) {
             this.callback = true;

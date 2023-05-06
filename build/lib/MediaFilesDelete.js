@@ -31,7 +31,7 @@ class MediaFilesDelete {
             //i console.log("📞  Phone: ", handlePhone);
             //i console.log("🗑️  media file: ", handleIndex);
             //_console.log(`🔗 handleUrl:`, handleUrl.data)
-            console.log("#️⃣  active handles: ", this.multi.getCount());
+            console.log("💠  active delete handles: ", this.multi.getCount());
             // remove completed from the Multi instance and close it
             this.multi.removeHandle(handle);
             handle.close();

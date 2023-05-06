@@ -13,7 +13,7 @@ import { Log } from "../service/Util";
 
 // Conf
 import { conf } from '../conf/curl'
-import { Attendee } from "../rmi/Types";
+import { Contact } from "../types/Contacts"
 
 
 export class Messages implements MultiCurlConf {
@@ -24,7 +24,7 @@ export class Messages implements MultiCurlConf {
 	login: EZLogin;
 
 	messages: Message[] = [];
-	attendees: Attendee[] = [];
+	contacts: Contact[] = [];
 
 	multi: Multi;
     handles: Easy [] = [];
@@ -45,10 +45,10 @@ export class Messages implements MultiCurlConf {
 	//: _________________________________________
 
 
-	sendMessage (message: Message, attendee: Attendee, callback: Function): void {
+	sendMessage (message: Message, attendee: Contact, callback: Function): void {
 		
 		const count = this.messages.push(message);
-		this.attendees.push(attendee);
+		this.contacts.push(attendee);
 		
 		console.log("🚀", count -1, "sendMessage ", attendee.barcode);
 
@@ -77,7 +77,7 @@ export class Messages implements MultiCurlConf {
 		//i console.log("📞  Phone: ", handlePhone);
 		//i console.log("📨  message: ", handleIndex);
 		//_console.log(`🔗  handleUrl:`, handleUrl.data)
-		console.log("#️⃣  active handles: ", this.multi.getCount());
+		console.log("💠  active message handles: ", this.multi.getCount());
 	
 		// remove completed from the Multi instance and close it
 		this.multi.removeHandle(handle);
@@ -87,21 +87,21 @@ export class Messages implements MultiCurlConf {
 			const responseData: string = handleData.join().toString();
 
 			if(responseCode == 201 || responseCode == 200) {
-				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString(), id: this.attendees[handleIndex].barcode}
+				var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString(), id: this.contacts[handleIndex].barcode}
 			}
 			else if(responseCode == 502) {
 				console.log(`↩️ `, responseData)
-				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.attendees[handleIndex].barcode}
+				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode}
 			}
 			else {
 				console.log(`↩️ `, responseData)
 				const json = JSON.parse(responseData);
-				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors, id: this.attendees[handleIndex].barcode}
+				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors, id: this.contacts[handleIndex].barcode}
 			}
 		} 
 		else {
 			console.log(handlePhone +	' returned error: "' +	error.message +	'" with errcode: ' + errorCode);
-			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.attendees[handleIndex].barcode}
+			var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.contacts[handleIndex].barcode}
 		}
 		Util.logStatus(log)
 	

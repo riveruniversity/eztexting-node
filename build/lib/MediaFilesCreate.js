@@ -13,7 +13,7 @@ class MediaFilesCreate {
     constructor(format = 'json') {
         this.baseUrl = curl_1.conf.baseUrl;
         this.apiUrl = '/sending/files';
-        this.attendees = [];
+        this.contacts = [];
         this.handles = [];
         this.handlesData = [];
         this.finished = 0;
@@ -25,12 +25,12 @@ class MediaFilesCreate {
             const handleUrl = handle.getInfo("EFFECTIVE_URL");
             const handleIndex = this.handles.indexOf(handle);
             const handleData = this.handlesData[handleIndex];
-            const handlePhone = this.attendees[handleIndex].phone;
+            const handlePhone = this.contacts[handleIndex].phone;
             console.log("🛬", handleIndex, "createMediaFile returned: ", responseCode);
             //i console.log("📞  Phone: ", handlePhone);
             //i console.log("☁️  media file: ", handleIndex);
             //_console.log(`🔗  handleUrl:`, handleUrl.data)
-            console.log("#️⃣  active handles: ", this.multi.getCount());
+            console.log("💠  active create handles: ", this.multi.getCount());
             // remove completed from the Multi instance and close it
             this.multi.removeHandle(handle);
             handle.close();
@@ -39,30 +39,30 @@ class MediaFilesCreate {
                 if (responseCode == 201 || responseCode == 200) {
                     const json = JSON.parse(responseData);
                     const mediaFile = json.Response.Entry;
-                    var log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + mediaFile.ID.toString(), id: this.attendees[handleIndex].barcode };
+                    var log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + mediaFile.ID.toString(), id: this.contacts[handleIndex].barcode };
                     // Add new File ID to Attendees Array
-                    this.attendees[handleIndex].file = mediaFile.ID;
+                    this.contacts[handleIndex].file = mediaFile.ID;
                 }
                 else {
                     console.log(`↩️ `, responseData);
-                    var log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData, id: this.attendees[handleIndex].barcode };
+                    var log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode };
                 }
             }
             else {
                 console.log(handlePhone, ' returned error: "', error.message, '" with errorcode: ', errorCode);
-                var log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.attendees[handleIndex].barcode };
+                var log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.contacts[handleIndex].barcode };
             }
             Util.logStatus(log);
             //* return
             if (this.callback) {
                 const isError = log.status != 'Success' ? log : false;
                 const callback = this.callbacks[handleIndex];
-                callback(this.attendees[handleIndex], isError);
+                callback(this.contacts[handleIndex], isError);
             }
             // Wait for more requests before closing 
             yield Util.sleep(10000);
             // >>> All finished
-            if (++this.finished === this.attendees.length) {
+            if (++this.finished === this.contacts.length) {
                 console.log("🚁 finished creating all media files!");
                 this.multi.close();
             }
@@ -74,14 +74,14 @@ class MediaFilesCreate {
     }
     //: _________________________________________
     createMediaFile(attendee, params, callback) {
-        const count = this.attendees.push(attendee);
+        const count = this.contacts.push(attendee);
         console.log("🚀", count - 1, "createMediaFile ", attendee.barcode);
         if (callback) {
             this.callback = true;
             this.callbacks.push(callback);
         }
         this.multi.onMessage(this.responseHandler);
-        let source = `${params.url + this.attendees[count - 1].barcode}.${params.filetype}`;
+        let source = `${params.url + this.contacts[count - 1].barcode}.${params.filetype}`;
         //* start the request
         this.setCurlOptions(source, count - 1);
     }

@@ -2,13 +2,13 @@
 import { Easy, Multi } from "node-libcurl";
 import { EZLogin, MultiCurlConf, ResponseFormat } from "../types/EZTexting";
 import { MediaFileOptions } from "../types/MediaFiles";
-import { Attendee } from "../rmi/Types";
+import { Contact } from "../types/Contacts";
 export declare class MediaFilesCreate implements MultiCurlConf {
     baseUrl: string;
     apiUrl: string;
     format: ResponseFormat;
     login: EZLogin;
-    attendees: Attendee[];
+    contacts: Contact[];
     multi: Multi;
     handles: Easy[];
     handlesData: Buffer[] | any;
@@ -16,7 +16,7 @@ export declare class MediaFilesCreate implements MultiCurlConf {
     callbacks: Function[];
     callback: boolean;
     constructor(format?: ResponseFormat);
-    createMediaFile(attendee: Attendee, params: MediaFileOptions, callback?: Function): void;
+    createMediaFile(attendee: Contact, params: MediaFileOptions, callback?: Function): void;
     private responseHandler;
     private setCurlOptions;
     private onDataHandler;
