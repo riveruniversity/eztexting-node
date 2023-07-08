@@ -14,6 +14,15 @@ export function checkLoginInfo() {
 }
 
 
+export function getAuth(): string {
+  if (!process.env.USR || !process.env.PASS)
+		throw new Error("Missing parameter: 'Username' or 'Password'! Please add environment variables.");
+
+	return 'Basic ' + Buffer.from(process.env.USR + ':' + process.env.PASS).toString('base64')
+  
+}
+
+
 export function getCertificate() {
     if(process.env.CRT_PATH) return process.env.CRT_PATH
     else return certificate

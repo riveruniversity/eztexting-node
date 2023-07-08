@@ -6,7 +6,7 @@ import * as EZService from "../service/EZTexting";
 import * as Util from '../service/Util'
 
 // Types
-import { EZLogin, MultiCurlConf, ResponseFormat} from "../types/EZTexting";
+import { EZLogin, MultiCurlConf } from "../types/EZTexting";
 import { Message, MessageWithFile } from "../types/Messages";
 import { Log } from "../service/Util";
 
@@ -18,9 +18,8 @@ import { conf } from '../conf/curl'
 export class MediaFilesDelete implements MultiCurlConf {
 
 	baseUrl = conf.baseUrl
-	apiUrl = '/sending/files/'
-	login: EZLogin;
-	format: ResponseFormat = 'json';
+	apiUrl = '/messages'
+	login: string;
 
 	messages: Message[] = [];
 
@@ -32,12 +31,11 @@ export class MediaFilesDelete implements MultiCurlConf {
 	callbacks: Function[] = [];
 	callback: boolean = false;
 
-	constructor(format: ResponseFormat) {
+	constructor() {
 		EZService.initDotenv();
 
-		this.login = EZService.checkLoginInfo();
+		this.login = EZService.getAuth();
 		
-		this.format = format
 		this.multi = new Multi();
 	}
 	//: _________________________________________
@@ -46,7 +44,7 @@ export class MediaFilesDelete implements MultiCurlConf {
 	deleteMediaFile(message: MessageWithFile, callback?: Function): void {
 		
 		let count = this.messages.push(message);
-		console.log("🚀", count -1, "deleteMediaFile ", message.PhoneNumbers);
+		console.log("🚀", count -1, "deleteMediaFile ", message.toNumbers);
 
 		if (callback) {
 			this.callback = true
@@ -54,7 +52,7 @@ export class MediaFilesDelete implements MultiCurlConf {
 		}
 
 		this.multi.onMessage(this.responseHandler);
-		this.setCurlOptions(message.FileID, count-1)
+		this.setCurlOptions(message.mediaFileId, count-1)
 	}
 	//: -----------------------------------------
 
@@ -64,7 +62,7 @@ export class MediaFilesDelete implements MultiCurlConf {
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
 		const handleIndex: number = this.handles.indexOf(handle);
 		const handleData: Buffer[] = this.handlesData[handleIndex];
-		const handlePhone: string | any = this.messages[handleIndex].PhoneNumbers;
+		const handlePhone: string | any = this.messages[handleIndex].toNumbers;
 	
 		console.log("🛬", handleIndex, "deleteMediaFile returned: ", responseCode);
 		//i console.log("📞  Phone: ", handlePhone);
@@ -115,13 +113,14 @@ export class MediaFilesDelete implements MultiCurlConf {
 	//: -----------------------------------------
 
 
-	private setCurlOptions(fileId: number, i: number) {
+	private setCurlOptions(fileId: string, i: number) {
 
 		const handle = new Easy();
-		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + fileId + "?format=" + this.format + `&handle=${i}&_method=DELETE`);
-		handle.setOpt(Curl.option.POST, true);
+		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + `?handle=${i}`);
+		handle.setOpt(Curl.option.CUSTOMREQUEST, 'DELETE');
+		handle.setOpt(Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${this.login}`]);
 		//[]handle.setOpt(Curl.option.CUSTOMREQUEST, "DELETE");
-		handle.setOpt(Curl.option.POSTFIELDS, this.createPostData());
+		handle.setOpt(Curl.option.POSTFIELDS, `{ "ids": ["${fileId}"] }`);
 		handle.setOpt(Curl.option.CAINFO, EZService.getCertificate());
 		handle.setOpt(Curl.option.FOLLOWLOCATION, true);
 		handle.setOpt(Curl.option.WRITEFUNCTION, (data: Buffer, size: number, nmemb: number) => {
@@ -149,9 +148,9 @@ export class MediaFilesDelete implements MultiCurlConf {
 	//: -----------------------------------------
 
 
-	private createPostData() {
+	// private createPostData() {
 	
-		const postLogin: EZLogin = EZService.checkLoginInfo();
-        return `User=${postLogin.User}&Password=${postLogin.Password}`
-	}
+	// 	const postLogin: EZLogin = EZService.checkLoginInfo();
+  //       return `User=${postLogin.User}&Password=${postLogin.Password}`
+	// }
 }

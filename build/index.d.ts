@@ -1,9 +1,9 @@
-import { ResponseFormat } from './types/EZTexting';
-export { ResponseFormat };
 import { Messages } from './lib/Messages';
 export { Messages };
 import { Message, MessageWithFile } from './types/Messages';
 export { Message, MessageWithFile };
+import { Contact } from './types/Contacts';
+export { Contact };
 import { MediaFilesCreate } from './lib/MediaFilesCreate';
 import { MediaFilesDelete } from './lib/MediaFilesDelete';
 export { MediaFilesCreate };

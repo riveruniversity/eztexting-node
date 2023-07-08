@@ -9,13 +9,13 @@ const params: Message = {}
 
 export const setMessageParams = (message: Message) => {
 
-    if(message.PhoneNumbers) setPhoneNumbers(message)
-    if(message.Groups) setGroups(message)
-    if(message.Subject) setSubject(message)
-    if(message.FileID) setFileID(message)
-    if(message.StampToSend) setStampToSend(message)
-    if(message.Message) setMessage(message)
-    setMessageTypeID(message)
+    if(message.toNumbers) setPhoneNumbers(message)
+    if(message.groupIds) setGroups(message)
+    // if(message.Subject) setSubject(message)
+    if(message.mediaFileId) setFileID(message)
+    if(message.sendAt) setStampToSend(message)
+    if(message.message) setMessage(message)
+    // setMessageTypeID(message)
 
     return params
 }
@@ -23,23 +23,21 @@ export const setMessageParams = (message: Message) => {
 
 function setPhoneNumbers (message: Message) {
 
-    if(!message.PhoneNumbers) return
+    if(!message.toNumbers) return
 
-    if(!message.Groups && ! message.PhoneNumbers) 
+    if(!message.groupIds && ! message.toNumbers) 
         throw new Error("You must include either groups or phone numbers!")
 
 
-    if(message.PhoneNumbers instanceof Array) {
+    if(message.toNumbers instanceof Array) {
 
         const phoneNumbers = []
 
-        for(let i in message.PhoneNumbers) {
-            phoneNumbers.push(cleanNumber(message.PhoneNumbers[i]))
+        for(let i in message.toNumbers) {
+            phoneNumbers.push(cleanNumber(message.toNumbers[i]))
         }
-        params.PhoneNumbers = phoneNumbers
+        params.toNumbers = phoneNumbers
     }
-    else
-        params.PhoneNumbers = cleanNumber(message.PhoneNumbers)
 
 }
 
@@ -59,41 +57,41 @@ function cleanNumber(number: string | number) {
 
 function setGroups (message: Message) {
 
-    if(!message.Groups && ! message.PhoneNumbers) 
+    if(!message.groupIds && ! message.toNumbers) 
         throw new Error("You must include either groups or phone numbers!")
     
-    params.Groups = message.Groups
+    params.groupIds = message.groupIds
 }
 
 
-function setSubject (message: Message) {
+// function setSubject (message: Message) {
 
-    if(message.Subject && message.Subject.length > 13) 
-        throw new Error("You must include either groups or phone numbers!")
+//     if(message.Subject && message.Subject.length > 13) 
+//         throw new Error("You must include either groups or phone numbers!")
 
-    params.Subject = message.Subject
-}
+//     params.Subject = message.Subject
+// }
 
 
 function setFileID (message: Message) {
-    params.FileID = message.FileID
+    params.mediaFileId = message.mediaFileId
 }
 
 
 function setStampToSend (message: Message) {
-    params.StampToSend = util.getTimestamp(message.StampToSend)
+    params.sendAt = util.getTimestamp(message.sendAt)
 }
 
 
 function setMessage (message: Message) {
-    params.Message = message.Message
+    params.message = message.message
 }
 
 
-function setMessageTypeID (message: Message) {
-    if(!message.MessageTypeID) message.MessageTypeID = '1'
-    params.MessageTypeID = message.MessageTypeID
-}
+// function setMessageTypeID (message: Message) {
+//     if(!message.MessageTypeID) message.MessageTypeID = '1'
+//     params.MessageTypeID = message.MessageTypeID
+// }
 
 
 

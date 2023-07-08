@@ -7,7 +7,7 @@ import * as Util from '../service/Util'
 import { setMessageParams } from '../service/Messages';
 
 // Types
-import { EZLogin, MultiCurlConf, ResponseFormat} from "../types/EZTexting";
+import { EZLogin, MultiCurlConf } from "../types/EZTexting";
 import { Message, PostData } from "../types/Messages";
 import { Log } from "../service/Util";
 
@@ -19,9 +19,8 @@ import { Contact } from "../types/Contacts"
 export class Messages implements MultiCurlConf {
 
 	baseUrl = conf.baseUrl
-	apiUrl = '/sending/messages?format='
-	format: ResponseFormat;
-	login: EZLogin;
+	apiUrl = '/messages'
+	login: string;
 
 	messages: Message[] = [];
 	contacts: Contact[] = [];
@@ -34,12 +33,10 @@ export class Messages implements MultiCurlConf {
 	callbacks: Function[] = [];
 	callback: boolean = false;
 
-	constructor(format: ResponseFormat = 'json') {
+	constructor() {
 		EZService.initDotenv();
 
-		this.login = EZService.checkLoginInfo();
-		
-		this.format = format
+		this.login = EZService.getAuth();
 		this.multi = new Multi();
 	}
 	//: _________________________________________
@@ -71,7 +68,7 @@ export class Messages implements MultiCurlConf {
 		const handleUrl = handle.getInfo("EFFECTIVE_URL");
 		const handleIndex: number = this.handles.indexOf(handle);
 		const handleData: Buffer[] = this.handlesData[handleIndex];
-		const handlePhone: string | any = this.messages[handleIndex].PhoneNumbers;
+		const handlePhone: string | any = this.messages[handleIndex].toNumbers;
 	
 		console.log("🛬", handleIndex, "sendMessage returned: ", responseCode);
 		//i console.log("📞  Phone: ", handlePhone);
@@ -96,7 +93,7 @@ export class Messages implements MultiCurlConf {
 			else {
 				console.log(`↩️ `, responseData)
 				const json = JSON.parse(responseData);
-				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors, id: this.contacts[handleIndex].barcode}
+				var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: json, id: this.contacts[handleIndex].barcode}
 			}
 		} 
 		else {
@@ -129,8 +126,9 @@ export class Messages implements MultiCurlConf {
 	private setCurlOptions(message: Message, i: number) {
 
 		const handle = new Easy();
-		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + this.format + `&handle=${i}`);
+		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + `?handle=${i}`);
 		handle.setOpt(Curl.option.POST, true);
+		handle.setOpt(Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${EZService.getAuth()}`]);
 		handle.setOpt(Curl.option.POSTFIELDS, this.createPostData(message));
 		handle.setOpt(Curl.option.CAINFO, EZService.getCertificate());
 		handle.setOpt(Curl.option.FOLLOWLOCATION, true);
@@ -160,11 +158,10 @@ export class Messages implements MultiCurlConf {
 
 
 	private createPostData(message: Message) {
+
+		const postMessage: Message  = setMessageParams(message);
+    console.log(postMessage);
 	
-		const postLogin: EZLogin = EZService.checkLoginInfo();
-		const postMessage: Message  = setMessageParams(message)
-		const postData: PostData | any = {...postLogin, ...postMessage}
-	
-		return new URLSearchParams(postData).toString()
+		return JSON.stringify(postMessage);
 	}
 }

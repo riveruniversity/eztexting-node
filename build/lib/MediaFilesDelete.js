@@ -10,10 +10,9 @@ const Util = tslib_1.__importStar(require("../service/Util"));
 // Conf
 const curl_1 = require("../conf/curl");
 class MediaFilesDelete {
-    constructor(format) {
+    constructor() {
         this.baseUrl = curl_1.conf.baseUrl;
-        this.apiUrl = '/sending/files/';
-        this.format = 'json';
+        this.apiUrl = '/messages';
         this.messages = [];
         this.handles = [];
         this.handlesData = [];
@@ -26,7 +25,7 @@ class MediaFilesDelete {
             const handleUrl = handle.getInfo("EFFECTIVE_URL");
             const handleIndex = this.handles.indexOf(handle);
             const handleData = this.handlesData[handleIndex];
-            const handlePhone = this.messages[handleIndex].PhoneNumbers;
+            const handlePhone = this.messages[handleIndex].toNumbers;
             console.log("🛬", handleIndex, "deleteMediaFile returned: ", responseCode);
             //i console.log("📞  Phone: ", handlePhone);
             //i console.log("🗑️  media file: ", handleIndex);
@@ -64,28 +63,28 @@ class MediaFilesDelete {
             }
         });
         EZService.initDotenv();
-        this.login = EZService.checkLoginInfo();
-        this.format = format;
+        this.login = EZService.getAuth();
         this.multi = new node_libcurl_1.Multi();
     }
     //: _________________________________________
     deleteMediaFile(message, callback) {
         let count = this.messages.push(message);
-        console.log("🚀", count - 1, "deleteMediaFile ", message.PhoneNumbers);
+        console.log("🚀", count - 1, "deleteMediaFile ", message.toNumbers);
         if (callback) {
             this.callback = true;
             this.callbacks.push(callback);
         }
         this.multi.onMessage(this.responseHandler);
-        this.setCurlOptions(message.FileID, count - 1);
+        this.setCurlOptions(message.mediaFileId, count - 1);
     }
     //: -----------------------------------------
     setCurlOptions(fileId, i) {
         const handle = new node_libcurl_1.Easy();
-        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + fileId + "?format=" + this.format + `&handle=${i}&_method=DELETE`);
-        handle.setOpt(node_libcurl_1.Curl.option.POST, true);
+        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + `?handle=${i}`);
+        handle.setOpt(node_libcurl_1.Curl.option.CUSTOMREQUEST, 'DELETE');
+        handle.setOpt(node_libcurl_1.Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${this.login}`]);
         //[]handle.setOpt(Curl.option.CUSTOMREQUEST, "DELETE");
-        handle.setOpt(node_libcurl_1.Curl.option.POSTFIELDS, this.createPostData());
+        handle.setOpt(node_libcurl_1.Curl.option.POSTFIELDS, `{ "ids": ["${fileId}"] }`);
         handle.setOpt(node_libcurl_1.Curl.option.CAINFO, EZService.getCertificate());
         handle.setOpt(node_libcurl_1.Curl.option.FOLLOWLOCATION, true);
         handle.setOpt(node_libcurl_1.Curl.option.WRITEFUNCTION, (data, size, nmemb) => {
@@ -103,11 +102,6 @@ class MediaFilesDelete {
         //_console.log("#️⃣  handle: ", key)
         //_console.log("🗄️  data: ", data)
         return size * nmemb;
-    }
-    //: -----------------------------------------
-    createPostData() {
-        const postLogin = EZService.checkLoginInfo();
-        return `User=${postLogin.User}&Password=${postLogin.Password}`;
     }
 }
 exports.MediaFilesDelete = MediaFilesDelete;

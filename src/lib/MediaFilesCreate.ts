@@ -6,7 +6,7 @@ import * as EZService from "../service/EZTexting";
 import * as Util from '../service/Util'
 
 // Types
-import { EZLogin, MultiCurlConf, ResponseFormat} from "../types/EZTexting";
+import { EZLogin, MultiCurlConf } from "../types/EZTexting";
 import { MediaFile, MediaFileOptions } from "../types/MediaFiles";
 import { Log } from "../service/Util";
 import { Contact } from "../types/Contacts"
@@ -19,9 +19,8 @@ import { conf } from '../conf/curl'
 export class MediaFilesCreate implements MultiCurlConf {
 
 	baseUrl = conf.baseUrl
-	apiUrl = '/sending/files'
-	format: ResponseFormat;
-	login: EZLogin;
+	apiUrl = '/media-files'
+	login: string;
 
 	contacts: Contact[] = [];
 
@@ -34,12 +33,10 @@ export class MediaFilesCreate implements MultiCurlConf {
 	callback: boolean = false;
 
 
-	constructor(format: ResponseFormat = 'json') {
+	constructor() {
 		EZService.initDotenv();
 
-		this.login = EZService.checkLoginInfo();
-		
-		this.format = format
+		this.login = EZService.getAuth();
 		this.multi = new Multi();
 	}
 	//: _________________________________________
@@ -86,12 +83,12 @@ export class MediaFilesCreate implements MultiCurlConf {
 			const responseData: string = handleData.join().toString();
 
 			if(responseCode == 201 || responseCode == 200) {
-				const json = JSON.parse(responseData);
-				const mediaFile: MediaFile = json.Response.Entry;
-				var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + mediaFile.ID.toString(), id: this.contacts[handleIndex].barcode}
+				const json = JSON.parse(responseData) as { id: string; };
+        const { id: fileId } = json;
+				var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + fileId, id: this.contacts[handleIndex].barcode}
 
 				// Add new File ID to Attendees Array
-				this.contacts[handleIndex].file = mediaFile.ID
+				this.contacts[handleIndex].file = fileId
 			}
 			else {
 				console.log(`↩️ `, responseData)
@@ -130,8 +127,9 @@ export class MediaFilesCreate implements MultiCurlConf {
 	private setCurlOptions(source: string, i: number) {
 
 		const handle = new Easy();
-		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + '?format=' + this.format + `&handle=${i}`);
+		handle.setOpt(Curl.option.URL, this.baseUrl + this.apiUrl + `?&handle=${i}`);
 		handle.setOpt(Curl.option.POST, true);
+    handle.setOpt(Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${EZService.getAuth()}`]);
 		handle.setOpt(Curl.option.POSTFIELDS, this.createPostData(source));
 		handle.setOpt(Curl.option.CAINFO, EZService.getCertificate());
 		handle.setOpt(Curl.option.FOLLOWLOCATION, true);
@@ -161,8 +159,7 @@ export class MediaFilesCreate implements MultiCurlConf {
 	
 
 	private createPostData(source: string) {
-	
-		const postLogin: EZLogin = EZService.checkLoginInfo();
-        return `User=${postLogin.User}&Password=${postLogin.Password}&Source=${source}`
+    
+    return `{ "mediaUrl": "${source}" }`
 	}
 }

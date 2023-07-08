@@ -4,9 +4,9 @@ export interface Contact {
 	phone: string;
 	barcode: string;
 	fam?: boolean;
-	file?: number;
+	file?: string;
 }
 
 export interface ContactWithFile extends Contact {
-	file: number;
+	file: string;
 }

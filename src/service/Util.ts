@@ -52,7 +52,7 @@ export interface Log {
     location: string;
     status: 'Error' | 'Success' | 'Curl Error' | 'Log' | 'Failure';
     message: string;
-    phone?: string;
+    phone?: string | number;
     params?: object;
     id?: any;
 }

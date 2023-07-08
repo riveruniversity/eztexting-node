@@ -1,5 +1,4 @@
-import { MediaFiles } from './lib/MediaFilesSingle'
-import { MediaFile, ResponseFormat } from '.'
+import { MediaFile } from '.'
 import { QRCodeGenerator, OutputFormat, StyleOptions } from ".";
 
 import path from "path";
@@ -86,14 +85,13 @@ qr.save("testPic", __dirname);
 
 
 // >>> Create new Media File from URL
-const format: ResponseFormat = 'json';
-const media = new MediaFiles(format);
+// const media = new MediaFiles();
 
-media
-	//.createMediaFile(__dirname + '\\testPic.png', true)
-	.createMediaFile(path.resolve('testPic.png'), true)
-	.then((value: any) => console.log(value.ID))
-	.catch(console.log)
+// media
+// 	//.createMediaFile(__dirname + '\\testPic.png', true)
+// 	.createMediaFile(path.resolve('testPic.png'), true)
+// 	.then((value: any) => console.log(value.ID))
+// 	.catch(console.log)
 
 
 	

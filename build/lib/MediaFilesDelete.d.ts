@@ -1,12 +1,11 @@
 /// <reference types="node" />
 import { Easy, Multi } from "node-libcurl";
-import { EZLogin, MultiCurlConf, ResponseFormat } from "../types/EZTexting";
+import { MultiCurlConf } from "../types/EZTexting";
 import { Message, MessageWithFile } from "../types/Messages";
 export declare class MediaFilesDelete implements MultiCurlConf {
     baseUrl: string;
     apiUrl: string;
-    login: EZLogin;
-    format: ResponseFormat;
+    login: string;
     messages: Message[];
     multi: Multi;
     handles: Easy[];
@@ -14,10 +13,9 @@ export declare class MediaFilesDelete implements MultiCurlConf {
     finished: number;
     callbacks: Function[];
     callback: boolean;
-    constructor(format: ResponseFormat);
+    constructor();
     deleteMediaFile(message: MessageWithFile, callback?: Function): void;
     private responseHandler;
     private setCurlOptions;
     private onDataHandler;
-    private createPostData;
 }

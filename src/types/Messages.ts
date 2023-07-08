@@ -1,17 +1,17 @@
 import { EZLogin } from './EZTexting'
 
 export interface Message {
-    PhoneNumbers?: string | string[] | number | number[];
-    Groups?: string | string[];
-    Subject?: string;
-    Message?: string;
-    MessageTypeID?: '1' | '2' | '3';
-    FileID?: number;
-	StampToSend?: string;
+    toNumbers?: string[];
+    groupIds?: string | string[];
+    // Subject?: string;
+    message?: string;
+    // MessageTypeID?: '1' | '2' | '3';
+    mediaFileId?: string;
+	  sendAt?: string;
 }
 
 export interface MessageWithFile extends Message {
-    FileID: number;
+    mediaFileId: string;
 }
 
 export interface PostData extends Message, EZLogin {}

@@ -6,36 +6,33 @@ const tslib_1 = require("tslib");
 const util = tslib_1.__importStar(require("./Util"));
 const params = {};
 const setMessageParams = (message) => {
-    if (message.PhoneNumbers)
+    if (message.toNumbers)
         setPhoneNumbers(message);
-    if (message.Groups)
+    if (message.groupIds)
         setGroups(message);
-    if (message.Subject)
-        setSubject(message);
-    if (message.FileID)
+    // if(message.Subject) setSubject(message)
+    if (message.mediaFileId)
         setFileID(message);
-    if (message.StampToSend)
+    if (message.sendAt)
         setStampToSend(message);
-    if (message.Message)
+    if (message.message)
         setMessage(message);
-    setMessageTypeID(message);
+    // setMessageTypeID(message)
     return params;
 };
 exports.setMessageParams = setMessageParams;
 function setPhoneNumbers(message) {
-    if (!message.PhoneNumbers)
+    if (!message.toNumbers)
         return;
-    if (!message.Groups && !message.PhoneNumbers)
+    if (!message.groupIds && !message.toNumbers)
         throw new Error("You must include either groups or phone numbers!");
-    if (message.PhoneNumbers instanceof Array) {
+    if (message.toNumbers instanceof Array) {
         const phoneNumbers = [];
-        for (let i in message.PhoneNumbers) {
-            phoneNumbers.push(cleanNumber(message.PhoneNumbers[i]));
+        for (let i in message.toNumbers) {
+            phoneNumbers.push(cleanNumber(message.toNumbers[i]));
         }
-        params.PhoneNumbers = phoneNumbers;
+        params.toNumbers = phoneNumbers;
     }
-    else
-        params.PhoneNumbers = cleanNumber(message.PhoneNumbers);
 }
 function cleanNumber(number) {
     const regExp = new RegExp(/\d/, 'g');
@@ -47,29 +44,28 @@ function cleanNumber(number) {
     //throw new Error("Phone number needs to be 10 digits!")
 }
 function setGroups(message) {
-    if (!message.Groups && !message.PhoneNumbers)
+    if (!message.groupIds && !message.toNumbers)
         throw new Error("You must include either groups or phone numbers!");
-    params.Groups = message.Groups;
+    params.groupIds = message.groupIds;
 }
-function setSubject(message) {
-    if (message.Subject && message.Subject.length > 13)
-        throw new Error("You must include either groups or phone numbers!");
-    params.Subject = message.Subject;
-}
+// function setSubject (message: Message) {
+//     if(message.Subject && message.Subject.length > 13) 
+//         throw new Error("You must include either groups or phone numbers!")
+//     params.Subject = message.Subject
+// }
 function setFileID(message) {
-    params.FileID = message.FileID;
+    params.mediaFileId = message.mediaFileId;
 }
 function setStampToSend(message) {
-    params.StampToSend = util.getTimestamp(message.StampToSend);
+    params.sendAt = util.getTimestamp(message.sendAt);
 }
 function setMessage(message) {
-    params.Message = message.Message;
+    params.message = message.message;
 }
-function setMessageTypeID(message) {
-    if (!message.MessageTypeID)
-        message.MessageTypeID = '1';
-    params.MessageTypeID = message.MessageTypeID;
-}
+// function setMessageTypeID (message: Message) {
+//     if(!message.MessageTypeID) message.MessageTypeID = '1'
+//     params.MessageTypeID = message.MessageTypeID
+// }
 /*
 
 function fixPhoneAndCountry(num: string) {

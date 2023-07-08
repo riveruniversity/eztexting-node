@@ -10,9 +10,9 @@ const Util = tslib_1.__importStar(require("../service/Util"));
 // Conf
 const curl_1 = require("../conf/curl");
 class MediaFilesCreate {
-    constructor(format = 'json') {
+    constructor() {
         this.baseUrl = curl_1.conf.baseUrl;
-        this.apiUrl = '/sending/files';
+        this.apiUrl = '/media-files';
         this.contacts = [];
         this.handles = [];
         this.handlesData = [];
@@ -38,10 +38,10 @@ class MediaFilesCreate {
                 const responseData = handleData.join().toString();
                 if (responseCode == 201 || responseCode == 200) {
                     const json = JSON.parse(responseData);
-                    const mediaFile = json.Response.Entry;
-                    var log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + mediaFile.ID.toString(), id: this.contacts[handleIndex].barcode };
+                    const { id: fileId } = json;
+                    var log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + fileId, id: this.contacts[handleIndex].barcode };
                     // Add new File ID to Attendees Array
-                    this.contacts[handleIndex].file = mediaFile.ID;
+                    this.contacts[handleIndex].file = fileId;
                 }
                 else {
                     console.log(`↩️ `, responseData);
@@ -68,8 +68,7 @@ class MediaFilesCreate {
             }
         });
         EZService.initDotenv();
-        this.login = EZService.checkLoginInfo();
-        this.format = format;
+        this.login = EZService.getAuth();
         this.multi = new node_libcurl_1.Multi();
     }
     //: _________________________________________
@@ -88,8 +87,9 @@ class MediaFilesCreate {
     //: -----------------------------------------
     setCurlOptions(source, i) {
         const handle = new node_libcurl_1.Easy();
-        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + '?format=' + this.format + `&handle=${i}`);
+        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + `?&handle=${i}`);
         handle.setOpt(node_libcurl_1.Curl.option.POST, true);
+        handle.setOpt(node_libcurl_1.Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${EZService.getAuth()}`]);
         handle.setOpt(node_libcurl_1.Curl.option.POSTFIELDS, this.createPostData(source));
         handle.setOpt(node_libcurl_1.Curl.option.CAINFO, EZService.getCertificate());
         handle.setOpt(node_libcurl_1.Curl.option.FOLLOWLOCATION, true);
@@ -111,8 +111,7 @@ class MediaFilesCreate {
     }
     //: -----------------------------------------
     createPostData(source) {
-        const postLogin = EZService.checkLoginInfo();
-        return `User=${postLogin.User}&Password=${postLogin.Password}&Source=${source}`;
+        return `{ "mediaUrl": "${source}" }`;
     }
 }
 exports.MediaFilesCreate = MediaFilesCreate;

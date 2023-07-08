@@ -2,25 +2,22 @@
 import { Curl, Easy, Multi, CurlOptionName, CurlOptionValueType } from 'node-libcurl';
 
 export interface EZLogin {
-    User: string;
-    Password: string;
+  User: string;
+  Password: string;
 }
 
 
 export interface BaseCurlConf {
-	baseUrl: string;
-    apiUrl: string;
-	login: EZLogin;
-    format: ResponseFormat;
+  baseUrl: string;
+  apiUrl: string;
+  login: string;
 }
 
 export interface MultiCurlConf extends BaseCurlConf {
-    multi: Multi;
-    handles: Easy [];
+  multi: Multi;
+  handles: Easy[];
 }
 
 export interface SingleCurlConf extends BaseCurlConf {
-    curl: Curl;
+  curl: Curl;
 }
-
-export type ResponseFormat = 'json' | 'xml';

@@ -1,3 +1,3 @@
 export const conf = {
-    baseUrl: "https://app.eztexting.com"
+    baseUrl: "https://a.eztexting.com/v1"
 }

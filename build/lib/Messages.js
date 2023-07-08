@@ -11,9 +11,9 @@ const Messages_1 = require("../service/Messages");
 // Conf
 const curl_1 = require("../conf/curl");
 class Messages {
-    constructor(format = 'json') {
+    constructor() {
         this.baseUrl = curl_1.conf.baseUrl;
-        this.apiUrl = '/sending/messages?format=';
+        this.apiUrl = '/messages';
         this.messages = [];
         this.contacts = [];
         this.handles = [];
@@ -27,7 +27,7 @@ class Messages {
             const handleUrl = handle.getInfo("EFFECTIVE_URL");
             const handleIndex = this.handles.indexOf(handle);
             const handleData = this.handlesData[handleIndex];
-            const handlePhone = this.messages[handleIndex].PhoneNumbers;
+            const handlePhone = this.messages[handleIndex].toNumbers;
             console.log("🛬", handleIndex, "sendMessage returned: ", responseCode);
             //i console.log("📞  Phone: ", handlePhone);
             //i console.log("📨  message: ", handleIndex);
@@ -48,7 +48,7 @@ class Messages {
                 else {
                     console.log(`↩️ `, responseData);
                     const json = JSON.parse(responseData);
-                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: json.Response.Errors, id: this.contacts[handleIndex].barcode };
+                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: json, id: this.contacts[handleIndex].barcode };
                 }
             }
             else {
@@ -71,8 +71,7 @@ class Messages {
             }
         });
         EZService.initDotenv();
-        this.login = EZService.checkLoginInfo();
-        this.format = format;
+        this.login = EZService.getAuth();
         this.multi = new node_libcurl_1.Multi();
     }
     //: _________________________________________
@@ -91,8 +90,9 @@ class Messages {
     //: -----------------------------------------
     setCurlOptions(message, i) {
         const handle = new node_libcurl_1.Easy();
-        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + this.format + `&handle=${i}`);
+        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + `?handle=${i}`);
         handle.setOpt(node_libcurl_1.Curl.option.POST, true);
+        handle.setOpt(node_libcurl_1.Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${EZService.getAuth()}`]);
         handle.setOpt(node_libcurl_1.Curl.option.POSTFIELDS, this.createPostData(message));
         handle.setOpt(node_libcurl_1.Curl.option.CAINFO, EZService.getCertificate());
         handle.setOpt(node_libcurl_1.Curl.option.FOLLOWLOCATION, true);
@@ -114,10 +114,9 @@ class Messages {
     }
     //: -----------------------------------------
     createPostData(message) {
-        const postLogin = EZService.checkLoginInfo();
         const postMessage = (0, Messages_1.setMessageParams)(message);
-        const postData = Object.assign(Object.assign({}, postLogin), postMessage);
-        return new URLSearchParams(postData).toString();
+        console.log(postMessage);
+        return JSON.stringify(postMessage);
     }
 }
 exports.Messages = Messages;
