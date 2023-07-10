@@ -160,8 +160,6 @@ export class Messages implements MultiCurlConf {
 	private createPostData(message: Message) {
 
 		const postMessage: Message  = setMessageParams(message);
-    console.log(postMessage);
-	
 		return JSON.stringify(postMessage);
 	}
 }
