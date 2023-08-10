@@ -13,6 +13,7 @@ export const setMessageParams = (message: Message) => {
     if(message.groupIds) setGroups(message)
     // if(message.Subject) setSubject(message)
     if(message.mediaFileId) setFileID(message)
+    if(message.mediaUrl) setMediaUrl(message)
     if(message.sendAt) setStampToSend(message)
     if(message.message) setMessage(message)
     // setMessageTypeID(message)
@@ -75,6 +76,11 @@ function setGroups (message: Message) {
 
 function setFileID (message: Message) {
     params.mediaFileId = message.mediaFileId
+}
+
+
+function setMediaUrl (message: Message) {
+    params.mediaUrl = message.mediaUrl
 }
 
 

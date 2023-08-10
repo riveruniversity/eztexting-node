@@ -13,6 +13,8 @@ const setMessageParams = (message) => {
     // if(message.Subject) setSubject(message)
     if (message.mediaFileId)
         setFileID(message);
+    if (message.mediaUrl)
+        setMediaUrl(message);
     if (message.sendAt)
         setStampToSend(message);
     if (message.message)
@@ -55,6 +57,9 @@ function setGroups(message) {
 // }
 function setFileID(message) {
     params.mediaFileId = message.mediaFileId;
+}
+function setMediaUrl(message) {
+    params.mediaUrl = message.mediaUrl;
 }
 function setStampToSend(message) {
     params.sendAt = util.getTimestamp(message.sendAt);

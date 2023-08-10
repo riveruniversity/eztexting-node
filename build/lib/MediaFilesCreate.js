@@ -16,6 +16,7 @@ class MediaFilesCreate {
         this.contacts = [];
         this.handles = [];
         this.handlesData = [];
+        this.waitBeforeClose = 15000; // ms
         this.finished = 0;
         this.callbacks = [];
         this.callback = false;
@@ -60,7 +61,7 @@ class MediaFilesCreate {
                 callback(this.contacts[handleIndex], isError);
             }
             // Wait for more requests before closing 
-            yield Util.sleep(10000);
+            yield Util.sleep(this.waitBeforeClose);
             // >>> All finished
             if (++this.finished === this.contacts.length) {
                 console.log("🚁 finished creating all media files!");
@@ -72,24 +73,23 @@ class MediaFilesCreate {
         this.multi = new node_libcurl_1.Multi();
     }
     //: _________________________________________
-    createMediaFile(attendee, params, callback) {
-        const count = this.contacts.push(attendee);
-        console.log("🚀", count - 1, "createMediaFile ", attendee.barcode);
+    createMediaFile(contact, url, callback) {
+        const count = this.contacts.push(contact);
+        console.log("🚀", count - 1, "createMediaFile ", contact.barcode);
         if (callback) {
             this.callback = true;
             this.callbacks.push(callback);
         }
         this.multi.onMessage(this.responseHandler);
-        let source = `${params.url + this.contacts[count - 1].barcode}.${params.filetype}`;
         //* start the request
-        this.setCurlOptions(source, count - 1);
+        this.setCurlOptions(url, count - 1);
     }
     //: -----------------------------------------
     setCurlOptions(source, i) {
         const handle = new node_libcurl_1.Easy();
         handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + `?&handle=${i}`);
         handle.setOpt(node_libcurl_1.Curl.option.POST, true);
-        handle.setOpt(node_libcurl_1.Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${EZService.getAuth()}`]);
+        handle.setOpt(node_libcurl_1.Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${this.login}`]);
         handle.setOpt(node_libcurl_1.Curl.option.POSTFIELDS, this.createPostData(source));
         handle.setOpt(node_libcurl_1.Curl.option.CAINFO, EZService.getCertificate());
         handle.setOpt(node_libcurl_1.Curl.option.FOLLOWLOCATION, true);
@@ -112,6 +112,9 @@ class MediaFilesCreate {
     //: -----------------------------------------
     createPostData(source) {
         return `{ "mediaUrl": "${source}" }`;
+    }
+    get activeHandles() {
+        return this.multi.getCount();
     }
 }
 exports.MediaFilesCreate = MediaFilesCreate;

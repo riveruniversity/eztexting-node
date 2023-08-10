@@ -12,6 +12,7 @@ export declare class Messages implements MultiCurlConf {
     multi: Multi;
     handles: Easy[];
     handlesData: Buffer[] | any;
+    waitBeforeClose: number;
     finished: number;
     callbacks: Function[];
     callback: boolean;
@@ -21,4 +22,5 @@ export declare class Messages implements MultiCurlConf {
     private setCurlOptions;
     private onDataHandler;
     private createPostData;
+    get activeHandles(): number;
 }

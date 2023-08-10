@@ -10,6 +10,7 @@ export declare class MediaFilesDelete implements MultiCurlConf {
     multi: Multi;
     handles: Easy[];
     handlesData: Buffer[] | any;
+    waitBeforeClose: number;
     finished: number;
     callbacks: Function[];
     callback: boolean;

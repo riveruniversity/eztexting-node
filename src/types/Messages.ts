@@ -7,6 +7,7 @@ export interface Message {
     message?: string;
     // MessageTypeID?: '1' | '2' | '3';
     mediaFileId?: string;
+    mediaUrl?: string;
 	  sendAt?: string;
 }
 

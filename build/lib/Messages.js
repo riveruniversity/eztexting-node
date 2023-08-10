@@ -18,6 +18,7 @@ class Messages {
         this.contacts = [];
         this.handles = [];
         this.handlesData = [];
+        this.waitBeforeClose = 15000; // ms
         this.finished = 0;
         this.callbacks = [];
         this.callback = false;
@@ -42,13 +43,13 @@ class Messages {
                     var log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString(), id: this.contacts[handleIndex].barcode };
                 }
                 else if (responseCode == 502) {
-                    console.log(`↩️ `, responseData);
+                    console.log(`↩️ ${this.apiUrl}`, responseData);
                     var log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode };
                 }
                 else {
                     console.log(`↩️ `, responseData);
                     const json = JSON.parse(responseData);
-                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: json, id: this.contacts[handleIndex].barcode };
+                    var log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode };
                 }
             }
             else {
@@ -63,7 +64,7 @@ class Messages {
                 callback(this.messages[handleIndex], isError);
             }
             // Wait for more requests before closing 
-            yield Util.sleep(10000);
+            yield Util.sleep(this.waitBeforeClose);
             // >>> All finished
             if (++this.finished === this.messages.length) {
                 console.log("🚁 finished sending all messages!");
@@ -115,8 +116,10 @@ class Messages {
     //: -----------------------------------------
     createPostData(message) {
         const postMessage = (0, Messages_1.setMessageParams)(message);
-        console.log(postMessage);
         return JSON.stringify(postMessage);
+    }
+    get activeHandles() {
+        return this.multi.getCount();
     }
 }
 exports.Messages = Messages;

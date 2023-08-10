@@ -4,6 +4,7 @@ export interface Message {
     groupIds?: string | string[];
     message?: string;
     mediaFileId?: string;
+    mediaUrl?: string;
     sendAt?: string;
 }
 export interface MessageWithFile extends Message {

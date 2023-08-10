@@ -12,10 +12,11 @@ const curl_1 = require("../conf/curl");
 class MediaFilesDelete {
     constructor() {
         this.baseUrl = curl_1.conf.baseUrl;
-        this.apiUrl = '/messages';
+        this.apiUrl = '/media-files';
         this.messages = [];
         this.handles = [];
         this.handlesData = [];
+        this.waitBeforeClose = 30000; // ms
         this.finished = 0;
         this.callbacks = [];
         this.callback = false;
@@ -36,8 +37,10 @@ class MediaFilesDelete {
             handle.close();
             if (!error) {
                 const responseData = handleData.join().toString();
-                if (responseCode == 204)
+                if (responseCode == 200)
                     var log = { status: 'Success', location: 'delete_media', phone: handlePhone, message: 'Deleted' };
+                else if (responseCode == 204)
+                    var log = { status: 'Info', location: 'delete_media', phone: handlePhone, message: 'No Content' };
                 else {
                     console.log(`↩️ `, responseData);
                     var log = { status: 'Error', location: 'delete_media', phone: handlePhone, message: responseCode + ' ' + responseData };
@@ -55,7 +58,7 @@ class MediaFilesDelete {
                 callback(this.messages[handleIndex], isError);
             }
             // Wait for more requests before closing 
-            yield Util.sleep(10000);
+            yield Util.sleep(this.waitBeforeClose);
             // >>> All finished
             if (++this.finished === this.messages.length) {
                 console.log("🚁 finished deleting all media files!");
@@ -78,13 +81,12 @@ class MediaFilesDelete {
         this.setCurlOptions(message.mediaFileId, count - 1);
     }
     //: -----------------------------------------
-    setCurlOptions(fileId, i) {
+    setCurlOptions(mediaFileId, i) {
         const handle = new node_libcurl_1.Easy();
-        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + `?handle=${i}`);
+        handle.setOpt(node_libcurl_1.Curl.option.URL, this.baseUrl + this.apiUrl + `/${mediaFileId}?handle=${i}`);
         handle.setOpt(node_libcurl_1.Curl.option.CUSTOMREQUEST, 'DELETE');
         handle.setOpt(node_libcurl_1.Curl.option.HTTPHEADER, ['Content-Type: application/json', `Authorization: ${this.login}`]);
-        //[]handle.setOpt(Curl.option.CUSTOMREQUEST, "DELETE");
-        handle.setOpt(node_libcurl_1.Curl.option.POSTFIELDS, `{ "ids": ["${fileId}"] }`);
+        // handle.setOpt(Curl.option.POSTFIELDS, `{ "ids": ["${mediaFileId}"] }`);
         handle.setOpt(node_libcurl_1.Curl.option.CAINFO, EZService.getCertificate());
         handle.setOpt(node_libcurl_1.Curl.option.FOLLOWLOCATION, true);
         handle.setOpt(node_libcurl_1.Curl.option.WRITEFUNCTION, (data, size, nmemb) => {
