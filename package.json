@@ -1,6 +1,6 @@
 {
   "name": "eztexting-node",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Send single, bulk, and individual bulk SMS and MMS with node-libcurl using the EZTexting REST API.",
   "main": "./build/index.js",
   "scripts": {
@@ -9,8 +9,8 @@
     "test-messages": "nodemon src/test.messages.ts",
     "test-qrcode": "nodemon src/test.qrcode.ts",
     "test-file": "nodemon src/test.mediafiles.ts",
-    "build": "rimraf build && tsc --project tsconfig.json && npm run copy",
-    "copy": "copyfiles --up 2 src/conf/cacert.pem build/conf"
+    "copy": "copyfiles --up 2 src/conf/cacert.pem build/conf",
+    "build": "rimraf build && tsc --project tsconfig.json && npm run copy"
   },
   "keywords": [
     "node",

@@ -88,12 +88,12 @@ export class Messages implements MultiCurlConf {
         var log: Log = { status: 'Success', location: 'messages', phone: handlePhone, message: responseCode.toString(), id: this.contacts[handleIndex].barcode }
       }
       else if (responseCode == 502) {
-        console.log(`↩️ ${this.apiUrl}`, responseData)
+        console.log(`↩️ Error at url: ${this.apiUrl}`, responseData)
         var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode }
       }
       else {
-        console.log(`↩️ `, responseData)
-        const json = JSON.parse(responseData);
+        console.log(`↩️ Error at url: ${this.apiUrl}`, responseData)
+        // const json = JSON.parse(responseData); not used, I don't now why it's here
         var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode }
       }
     }
