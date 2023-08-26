@@ -21,6 +21,7 @@ export class MediaFilesCreate implements MultiCurlConf {
   baseUrl = conf.baseUrl
   apiUrl = '/media-files'
   login: string;
+  verbose: boolean = false;
 
   contacts: Contact[] = [];
 
@@ -34,9 +35,10 @@ export class MediaFilesCreate implements MultiCurlConf {
   callback: boolean = false;
 
 
-  constructor() {
+  constructor(verbose: boolean = false) {
     EZService.initDotenv();
 
+    this.verbose = verbose;
     this.login = EZService.getAuth();
     this.multi = new Multi();
   }
@@ -46,7 +48,7 @@ export class MediaFilesCreate implements MultiCurlConf {
   createMediaFile(contact: Contact, url: string, callback?: Function): void {
 
     const count = this.contacts.push(contact);
-    console.log("🚀", count - 1, "createMediaFile ", contact.barcode);
+    if (this.verbose) console.log("🚀", count - 1, "createMediaFile ", contact.barcode);
 
     if (callback) {
       this.callback = true
@@ -68,11 +70,11 @@ export class MediaFilesCreate implements MultiCurlConf {
     const handleData: Buffer[] = this.handlesData[handleIndex];
     const handlePhone: string | any = this.contacts[handleIndex].phone;
 
-    console.log("🛬", handleIndex, "createMediaFile returned: ", responseCode);
+    if (this.verbose) console.log("🛬", handleIndex, "createMediaFile returned: ", responseCode);
     //i console.log("📞  Phone: ", handlePhone);
     //i console.log("☁️  media file: ", handleIndex);
-    //_console.log(`🔗  handleUrl:`, handleUrl.data)
-    console.log("💠  active create handles: ", this.multi.getCount());
+    if (this.verbose) console.log(`🔗  handleUrl:`, handleUrl.data)
+    if (this.verbose) console.log("💠  active create handles: ", this.multi.getCount());
 
     // remove completed from the Multi instance and close it
     this.multi.removeHandle(handle);

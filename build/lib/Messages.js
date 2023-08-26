@@ -11,9 +11,10 @@ const Messages_1 = require("../service/Messages");
 // Conf
 const curl_1 = require("../conf/curl");
 class Messages {
-    constructor() {
+    constructor(verbose = false) {
         this.baseUrl = curl_1.conf.baseUrl;
         this.apiUrl = '/messages';
+        this.verbose = false;
         this.messages = [];
         this.contacts = [];
         this.handles = [];
@@ -29,11 +30,14 @@ class Messages {
             const handleIndex = this.handles.indexOf(handle);
             const handleData = this.handlesData[handleIndex];
             const handlePhone = this.messages[handleIndex].toNumbers;
-            console.log("🛬", handleIndex, "sendMessage returned: ", responseCode);
+            if (this.verbose)
+                console.log("🛬", handleIndex, "sendMessage returned: ", responseCode);
             //i console.log("📞  Phone: ", handlePhone);
             //i console.log("📨  message: ", handleIndex);
-            //_console.log(`🔗  handleUrl:`, handleUrl.data)
-            console.log("💠  active message handles: ", this.multi.getCount());
+            if (this.verbose)
+                console.log(`🔗  handleUrl:`, handleUrl.data);
+            if (this.verbose)
+                console.log("💠  active message handles: ", this.multi.getCount());
             // remove completed from the Multi instance and close it
             this.multi.removeHandle(handle);
             handle.close();
@@ -72,6 +76,7 @@ class Messages {
             }
         });
         EZService.initDotenv();
+        this.verbose = verbose;
         this.login = EZService.getAuth();
         this.multi = new node_libcurl_1.Multi();
     }
@@ -79,7 +84,8 @@ class Messages {
     sendMessage(message, attendee, callback) {
         const count = this.messages.push(message);
         this.contacts.push(attendee);
-        console.log("🚀", count - 1, "sendMessage ", attendee.barcode);
+        if (this.verbose)
+            console.log("🚀", count - 1, "sendMessage ", attendee.barcode);
         if (callback) {
             this.callback = true;
             this.callbacks.push(callback);

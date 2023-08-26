@@ -21,6 +21,7 @@ export class Messages implements MultiCurlConf {
   baseUrl = conf.baseUrl
   apiUrl = '/messages'
   login: string;
+  verbose: boolean = false;
 
   messages: Message[] = [];
   contacts: Contact[] = [];
@@ -34,9 +35,10 @@ export class Messages implements MultiCurlConf {
   callbacks: Function[] = [];
   callback: boolean = false;
 
-  constructor() {
+  constructor(verbose: boolean = false) {
     EZService.initDotenv();
 
+    this.verbose = verbose;
     this.login = EZService.getAuth();
     this.multi = new Multi();
   }
@@ -48,7 +50,7 @@ export class Messages implements MultiCurlConf {
     const count = this.messages.push(message);
     this.contacts.push(attendee);
 
-    console.log("🚀", count - 1, "sendMessage ", attendee.barcode);
+    if (this.verbose) console.log("🚀", count - 1, "sendMessage ", attendee.barcode);
 
 
     if (callback) {
@@ -71,11 +73,11 @@ export class Messages implements MultiCurlConf {
     const handleData: Buffer[] = this.handlesData[handleIndex];
     const handlePhone: string | any = this.messages[handleIndex].toNumbers;
 
-    console.log("🛬", handleIndex, "sendMessage returned: ", responseCode);
+    if (this.verbose) console.log("🛬", handleIndex, "sendMessage returned: ", responseCode);
     //i console.log("📞  Phone: ", handlePhone);
     //i console.log("📨  message: ", handleIndex);
-    //_console.log(`🔗  handleUrl:`, handleUrl.data)
-    console.log("💠  active message handles: ", this.multi.getCount());
+    if (this.verbose) console.log(`🔗  handleUrl:`, handleUrl.data)
+    if (this.verbose) console.log("💠  active message handles: ", this.multi.getCount());
 
     // remove completed from the Multi instance and close it
     this.multi.removeHandle(handle);

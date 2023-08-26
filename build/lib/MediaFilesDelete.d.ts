@@ -6,6 +6,7 @@ export declare class MediaFilesDelete implements MultiCurlConf {
     baseUrl: string;
     apiUrl: string;
     login: string;
+    verbose: boolean;
     messages: Message[];
     multi: Multi;
     handles: Easy[];
@@ -14,7 +15,7 @@ export declare class MediaFilesDelete implements MultiCurlConf {
     finished: number;
     callbacks: Function[];
     callback: boolean;
-    constructor();
+    constructor(verbose?: boolean);
     deleteMediaFile(message: MessageWithFile, callback?: Function): void;
     private responseHandler;
     private setCurlOptions;

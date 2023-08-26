@@ -7,6 +7,7 @@ export declare class Messages implements MultiCurlConf {
     baseUrl: string;
     apiUrl: string;
     login: string;
+    verbose: boolean;
     messages: Message[];
     contacts: Contact[];
     multi: Multi;
@@ -16,7 +17,7 @@ export declare class Messages implements MultiCurlConf {
     finished: number;
     callbacks: Function[];
     callback: boolean;
-    constructor();
+    constructor(verbose?: boolean);
     sendMessage(message: Message, attendee: Contact, callback: Function): void;
     private onResponseHandler;
     private setCurlOptions;

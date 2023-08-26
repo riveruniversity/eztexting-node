@@ -6,6 +6,7 @@ export declare class MediaFilesCreate implements MultiCurlConf {
     baseUrl: string;
     apiUrl: string;
     login: string;
+    verbose: boolean;
     contacts: Contact[];
     multi: Multi;
     handles: Easy[];
@@ -14,7 +15,7 @@ export declare class MediaFilesCreate implements MultiCurlConf {
     finished: number;
     callbacks: Function[];
     callback: boolean;
-    constructor();
+    constructor(verbose?: boolean);
     createMediaFile(contact: Contact, url: string, callback?: Function): void;
     private responseHandler;
     private setCurlOptions;

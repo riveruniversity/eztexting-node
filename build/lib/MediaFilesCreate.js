@@ -10,9 +10,10 @@ const Util = tslib_1.__importStar(require("../service/Util"));
 // Conf
 const curl_1 = require("../conf/curl");
 class MediaFilesCreate {
-    constructor() {
+    constructor(verbose = false) {
         this.baseUrl = curl_1.conf.baseUrl;
         this.apiUrl = '/media-files';
+        this.verbose = false;
         this.contacts = [];
         this.handles = [];
         this.handlesData = [];
@@ -27,11 +28,14 @@ class MediaFilesCreate {
             const handleIndex = this.handles.indexOf(handle);
             const handleData = this.handlesData[handleIndex];
             const handlePhone = this.contacts[handleIndex].phone;
-            console.log("🛬", handleIndex, "createMediaFile returned: ", responseCode);
+            if (this.verbose)
+                console.log("🛬", handleIndex, "createMediaFile returned: ", responseCode);
             //i console.log("📞  Phone: ", handlePhone);
             //i console.log("☁️  media file: ", handleIndex);
-            //_console.log(`🔗  handleUrl:`, handleUrl.data)
-            console.log("💠  active create handles: ", this.multi.getCount());
+            if (this.verbose)
+                console.log(`🔗  handleUrl:`, handleUrl.data);
+            if (this.verbose)
+                console.log("💠  active create handles: ", this.multi.getCount());
             // remove completed from the Multi instance and close it
             this.multi.removeHandle(handle);
             handle.close();
@@ -69,13 +73,15 @@ class MediaFilesCreate {
             }
         });
         EZService.initDotenv();
+        this.verbose = verbose;
         this.login = EZService.getAuth();
         this.multi = new node_libcurl_1.Multi();
     }
     //: _________________________________________
     createMediaFile(contact, url, callback) {
         const count = this.contacts.push(contact);
-        console.log("🚀", count - 1, "createMediaFile ", contact.barcode);
+        if (this.verbose)
+            console.log("🚀", count - 1, "createMediaFile ", contact.barcode);
         if (callback) {
             this.callback = true;
             this.callbacks.push(callback);
