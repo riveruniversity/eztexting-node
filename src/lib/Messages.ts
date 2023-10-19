@@ -110,7 +110,7 @@ export class Messages implements MultiCurlConf {
     if (this.callback) {
       const isError = log.status != 'Success' ? log : false;
       const callback = this.callbacks[handleIndex]
-      callback(this.messages[handleIndex], isError)
+      callback(this.contacts[handleIndex], this.messages[handleIndex], isError)
     }
 
     // Wait for more requests before closing 
