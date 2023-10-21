@@ -30,8 +30,10 @@ function setPhoneNumbers(message) {
         throw new Error("You must include either groups or phone numbers!");
     if (message.toNumbers instanceof Array) {
         const phoneNumbers = [];
-        for (let i in message.toNumbers) {
-            phoneNumbers.push(cleanNumber(message.toNumbers[i]));
+        for (let number of message.toNumbers) {
+            const cleanNum = cleanNumber(number);
+            if (cleanNum)
+                phoneNumbers.push(cleanNum);
         }
         params.toNumbers = phoneNumbers;
     }
