@@ -1,5 +1,5 @@
 import { Options, Extension } from "qr-code-styling-node";
-export declare type OutputFormat = Extension;
+export type OutputFormat = Extension;
 export interface StyleOptions extends Options {
     dotsOptionsHelper?: {
         colorType: {

@@ -84,25 +84,33 @@ export class MediaFilesCreate implements MultiCurlConf {
       const responseData: string = handleData.join().toString();
 
       if (responseCode == 201 || responseCode == 200) {
-        const json = JSON.parse(responseData) as { id: string; };
-        const { id: fileId } = json;
-        var log: Log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + fileId, id: this.contacts[handleIndex].barcode }
+        try {
+          const json = JSON.parse(responseData) as { id: string; };
+          const { id: fileId } = json;
+          this.contacts[handleIndex].file = fileId  // Add new File ID to Attendees Array
 
-        // Add new File ID to Attendees Array
-        this.contacts[handleIndex].file = fileId
+          var log: Partial<Log> = { status: 'Success', message: 'File: ' + fileId }
+        }
+        catch (err) {
+          console.log(`↩️ `, responseData)
+          var log: Partial<Log> = { status: 'Error', message: responseData }
+        }
+
       }
       else {
         console.log(`↩️ `, responseData)
-        var log: Log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode }
+        var log: Partial<Log> = { status: 'Error', message: responseData }
       }
 
 
     }
     else {
       console.log(handlePhone, ' returned error: "', error.message, '" with errorcode: ', errorCode);
-      var log: Log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.contacts[handleIndex].barcode }
+      var log: Partial<Log> = { status: 'Curl Error', message: error.message }
     }
-    Util.logStatus(log)
+
+    const completeLog: Log = { status: log.status!, message: log.message!, phone: handlePhone, location: 'create_media', id: this.contacts[handleIndex].barcode }
+    Util.logStatus(completeLog)
 
 
     //* return

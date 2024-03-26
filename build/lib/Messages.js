@@ -52,7 +52,6 @@ class Messages {
                 }
                 else {
                     console.log(`↩️ Error at url: ${this.apiUrl}`, responseData);
-                    // const json = JSON.parse(responseData); not used, I don't now why it's here
                     var log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode };
                 }
             }

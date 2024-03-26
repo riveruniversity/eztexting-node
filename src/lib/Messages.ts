@@ -95,7 +95,6 @@ export class Messages implements MultiCurlConf {
       }
       else {
         console.log(`↩️ Error at url: ${this.apiUrl}`, responseData)
-        // const json = JSON.parse(responseData); not used, I don't now why it's here
         var log: Log = { status: 'Error', location: 'messages', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode }
       }
     }

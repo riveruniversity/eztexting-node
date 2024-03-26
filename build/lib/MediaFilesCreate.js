@@ -42,22 +42,28 @@ class MediaFilesCreate {
             if (!error) {
                 const responseData = handleData.join().toString();
                 if (responseCode == 201 || responseCode == 200) {
-                    const json = JSON.parse(responseData);
-                    const { id: fileId } = json;
-                    var log = { status: 'Success', location: 'create_media', phone: handlePhone, message: 'File: ' + fileId, id: this.contacts[handleIndex].barcode };
-                    // Add new File ID to Attendees Array
-                    this.contacts[handleIndex].file = fileId;
+                    try {
+                        const json = JSON.parse(responseData);
+                        const { id: fileId } = json;
+                        this.contacts[handleIndex].file = fileId; // Add new File ID to Attendees Array
+                        var log = { status: 'Success', message: 'File: ' + fileId };
+                    }
+                    catch (err) {
+                        console.log(`↩️ `, responseData);
+                        var log = { status: 'Error', message: responseData };
+                    }
                 }
                 else {
                     console.log(`↩️ `, responseData);
-                    var log = { status: 'Error', location: 'create_media', phone: handlePhone, message: responseData, id: this.contacts[handleIndex].barcode };
+                    var log = { status: 'Error', message: responseData };
                 }
             }
             else {
                 console.log(handlePhone, ' returned error: "', error.message, '" with errorcode: ', errorCode);
-                var log = { status: 'Curl Error', location: 'messages', phone: handlePhone, message: error.message, id: this.contacts[handleIndex].barcode };
+                var log = { status: 'Curl Error', message: error.message };
             }
-            Util.logStatus(log);
+            const completeLog = { status: log.status, message: log.message, phone: handlePhone, location: 'create_media', id: this.contacts[handleIndex].barcode };
+            Util.logStatus(completeLog);
             //* return
             if (this.callback) {
                 const isError = log.status != 'Success' ? log : false;

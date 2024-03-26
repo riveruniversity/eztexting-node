@@ -12,5 +12,5 @@ export interface MessageWithFile extends Message {
 }
 export interface PostData extends Message, EZLogin {
 }
-export declare type EZTimeStamp = `${number}${number}${number}${number}-${number}${number}-${number}${number} ${number}${number}:${number}${number}`;
-export declare type PhoneNumber = `${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}`;
+export type EZTimeStamp = `${number}${number}${number}${number}-${number}${number}-${number}${number} ${number}${number}:${number}${number}`;
+export type PhoneNumber = `${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}`;
